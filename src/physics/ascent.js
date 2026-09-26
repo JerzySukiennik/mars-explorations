@@ -294,17 +294,18 @@ export function solveKick(F = FLIGHT_IFT5, dt = 0.05) {
 // Phase 2a: ship burn to SECO (linear-tangent steering)
 // ---------------------------------------------------------------------------
 export function flyShip(F, sep, steer, dt, tEnd, rec) {
-  const S = F.ship, SG = F.shipGuidance, TL = F.timeline;
-  const R = EARTH.a * (1 - EARTH.f * 0.2); // mean-ish radius for apsis altitudes near 24-26 deg
+  const S = F.ship, SG = F.shipGuidance, TL = F.timeline, O = F.targetOrbit;
+  const R = EARTH.a; // apsis altitudes quoted above the equatorial radius
+  const tgt = G.insertionTarget(EARTH.mu, R, O.perigeeKm * 1000, O.apogeeKm * 1000, steer.insertionAltKm * 1000);
   let s = { t: sep.t, r: sep.r, v: sep.v, m: sep.m };
   let prop = sep.prop;
-  let seco = null, tau = SG.throttle;
+  let seco = null, tau = SG.throttle, dir = null;
   while (s.t < tEnd - 1e-9) {
     const d = describe(s);
     let ctl = { cd: CD_SLENDER };
     if (!seco) {
       const aps = G.apsides(s.r, s.v, EARTH.mu, R);
-      if (aps.perigee >= F.targetOrbit.perigeeKm * 1000 || prop <= 0 || d.alt < 0) {
+      if (aps.perigee >= O.perigeeKm * 1000 || prop <= 0 || d.alt < 0) {
         seco = { ...d, t: s.t, apogee: aps.apogee, perigee: aps.perigee, prop, mass: s.m };
         if (!rec) return { seco, state: s };
       } else {
@@ -315,7 +316,18 @@ export function flyShip(F, sep, steer, dt, tEnd, rec) {
           { engine: S.sl, n: S.nSl, tau, ramp },
           { engine: S.vac, n: S.nVac, tau, ramp },
         ];
-        ctl.dir = G.linearTangentPitch({ t: s.t - sep.t, r: s.r, v: s.v }, steer);
+        const { F: Fnow, md } = propulsion(ctl.groups.map((g) => ({ ...g, ramp: 1 })), d.pa);
+        // Velocity to gain: target horizontal speed and radial rate.
+        const up = unit(s.r);
+        const hdot = dot(s.v, up);
+        const vh = norm(sub(s.v, scale(up, hdot)));
+        const dv = Math.hypot(tgt.vh - vh, tgt.hdot - hdot);
+        const tgo = G.timeToGo(dv, Fnow / md, s.m, md, Fnow, SG.accelLimit);
+        // Freeze the steering over the last seconds (t_go -> 0 singularity).
+        if (!dir || tgo > 10) {
+          dir = G.insertionSteering({ r: s.r, v: s.v, aThrust: (Fnow * ramp) / s.m, g: norm(gravity(s.r)) }, tgt, tgo);
+        }
+        ctl.dir = dir;
       }
     }
     if (rec) rec(s, d, { tau, phase: seco ? 'coast' : 'burn' });
@@ -324,47 +336,6 @@ export function flyShip(F, sep, steer, dt, tEnd, rec) {
     s = ns;
   }
   return { seco, state: s };
-}
-
-/** Inertial flight-path tangent at a state (initial guess for tan(pitch0)). */
-function tanGamma(sep) {
-  const up = unit(sep.r);
-  return dot(sep.v, up) / norm(sub(sep.v, scale(up, dot(sep.v, up))));
-}
-
-/**
- * Shoot the two linear-tangent constants (tan pitch0, rate) so that SECO -
- * which happens when the osculating perigee reaches the target - puts the
- * ship on the target apogee at the design insertion altitude.
- */
-export function solveShipSteering(F, sep, dt = 0.1) {
-  const T = F.targetOrbit;
-  const run = (A, c) => {
-    const res = flyShip(F, sep, { tanPitch0: A, rate: c }, dt, sep.t + 1500);
-    return [(res.seco.apogee - T.apogeeKm * 1000) / 1000, (res.seco.alt - T.insertionAltKm * 1000) / 1000];
-  };
-  // 1-D start: pitch starts along the velocity, scan the rate.
-  let A = tanGamma(sep), c = 0;
-  for (let k = 1e-4; k < 0.05; k += 1e-4) { if (run(A, k)[0] < 0) break; c = k; }
-  let f = run(A, c);
-  for (let it = 0; it < 30 && Math.hypot(f[0], f[1]) > 0.05; it++) {
-    const hA = 1e-3, hc = 2e-6;
-    const fA = run(A + hA, c), fc = run(A, c + hc);
-    const J = [[(fA[0] - f[0]) / hA, (fc[0] - f[0]) / hc], [(fA[1] - f[1]) / hA, (fc[1] - f[1]) / hc]];
-    const det = J[0][0] * J[1][1] - J[0][1] * J[1][0];
-    if (!isFinite(det) || det === 0) break;
-    let dA = -(J[1][1] * f[0] - J[0][1] * f[1]) / det;
-    let dc = -(-J[1][0] * f[0] + J[0][0] * f[1]) / det;
-    // Damped step: halve until the residual decreases.
-    let lam = 1, nf;
-    for (let j = 0; j < 12; j++) {
-      nf = run(A + lam * dA, c + lam * dc);
-      if (Math.hypot(nf[0], nf[1]) < Math.hypot(f[0], f[1])) break;
-      lam /= 2;
-    }
-    A += lam * dA; c += lam * dc; f = nf;
-  }
-  return { tanPitch0: A, rate: c, residualKm: f };
 }
 
 // ---------------------------------------------------------------------------
@@ -521,7 +492,7 @@ export function simulateAscent(opts = {}) {
   // Before release the stack sits on the pad (HUD reads 0).
   for (let k = 0; k < F.timeline.release; k++) samples.set(k, { t: k, stack_speed: 0, stack_alt: 0, stack_phase: 'pad' });
   const stack = flyStack(F, kickDeg, dt, sampler('stack'));
-  const shipSteer = opts.shipSteer ?? solveShipSteering(F, stack.ship);
+  const shipSteer = opts.shipSteer ?? { insertionAltKm: F.targetOrbit.insertionAltKm };
   const ship = flyShip(F, stack.ship, shipSteer, dt, tEnd + dt, sampler('ship'));
   const booster = flyBooster(F, stack.booster, dt, tEnd + dt, sampler('booster'));
   const rows = [];
