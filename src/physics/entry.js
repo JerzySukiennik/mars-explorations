@@ -17,13 +17,21 @@
 // (src/physics/earth_atmosphere.js) and the derived Mars model
 // (src/physics/mars_atmosphere.js).
 //
-// Guidance: a numerical predictor-corrector (Apollo / MSL / FNPEG family).
-// Every guidance cycle it integrates the remaining trajectory with the same
-// dynamics for a trial bank magnitude and solves (secant) for the bank that
-// makes the predicted downrange at the end of the hypersonic glide equal the
-// distance to the target. Before the vehicle "feels" the atmosphere
-// (drag < 0.05 g) it flies lift-up. Angle of attack follows a schedule:
-// ~70 deg hypersonic, pitching up to the ~85-90 deg belly-flop subsonically.
+// Guidance (Earth / Mars entry): "no-skip" altitude-rate guidance. Once the
+// ship feels the atmosphere (drag > 0.05 g) the bank angle sets the vertical
+// lift so that the altitude rate is damped to zero:
+//   L cos(bank)/m = g - v_t^2/r + D sin(g)/m - k hdot,  k = 2 zeta omega,
+// with omega^2 = (L/m)/H the natural frequency of the altitude oscillation of
+// a lifting vehicle in an exponential atmosphere (scale height H) and
+// zeta = 0.7. The pull-out therefore ends in a constant-altitude plateau
+// (bank ~40-50 deg) that lasts until the required lift exceeds what the ship
+// has; from then on it flies lift-up, descending along the equilibrium glide.
+// Angle of attack follows a Mach schedule: ~62 deg hypersonic, pitching up to
+// the ~88 deg belly-flop between Mach 5 and Mach 1.
+// Aerocapture (Mars): numerical predictor-corrector (Apollo / MSL / FNPEG
+// family) solving each cycle for the constant bank whose predicted exit orbit
+// has the target apoapsis. Aerobraking: a lift-neutral pass through the upper
+// atmosphere, reporting delta-v, peak heating and dynamic pressure.
 //
 // Convective stagnation heating: Sutton & Graves (1971),
 //   q = k sqrt(rho / Rn) V^3, k = 1.7415e-4 (Earth air), 1.9027e-4 (Mars CO2).
@@ -74,9 +82,9 @@ export const PLANETS = Object.freeze({ earth: EARTH, mars: MARS });
 
 /** Starship Block 1 (Ship 30) in entry configuration. */
 export const STARSHIP_ENTRY = Object.freeze({
-  mass: 120e3,              // kg: ~100 t dry + ~20 t landing propellant in header tanks / residuals
+  mass: 150e3,              // kg: ~120 t dry (Block 1 ship + TPS) + ~30 t landing propellant in the header tanks
   geom: STARSHIP_GEOM,
-  alphaHyp: 70 * DEG,       // hypersonic angle of attack (belly-first)
+  alphaHyp: 62 * DEG,       // hypersonic trim angle of attack (belly-first; Starship flies ~60-70 deg). L/D ~0.5 here.
   alphaSub: 88 * DEG,       // subsonic belly-flop attitude
   noseRadius: STARSHIP_GEOM.noseRadius,
 });
@@ -195,6 +203,99 @@ export function simulateEntry(opts = {}) {
     t += dt;
   }
   return { samples, heatLoad, vehicle: veh, planet };
+}
+
+/** Local density scale height (m). */
+export function scaleHeight(planet, h) {
+  const a = planet.atm(h - 500).rho, b = planet.atm(h + 500).rho;
+  return a > 0 && b > 0 ? 1000 / Math.log(a / b) : 7000;
+}
+
+/**
+ * No-skip altitude-rate guidance (see header). Returns a guidance(ctx) function.
+ * opts: zeta (damping), activation (drag, m/s^2, at which bank control starts),
+ *       hdotRef(ctx) (m/s, default 0 = hold altitude).
+ */
+export function altitudeRateGuidance(opts = {}) {
+  const zeta = opts.zeta ?? 0.7;
+  const act = opts.activation ?? 0.05 * 9.80665;
+  return (c) => {
+    const alpha = alphaSchedule(c.M, c.veh);
+    if (c.drag < act) return { bank: 0, alpha };
+    const r = c.planet.R + c.h;
+    const vt = c.v * Math.cos(c.gamma) + c.w * r;          // inertial horizontal speed
+    const g = c.planet.mu / (r * r);
+    const hdot = c.v * Math.sin(c.gamma);
+    const lift = Math.max(c.drag * c.LD, 1e-4);
+    const k = 2 * zeta * Math.sqrt(lift / scaleHeight(c.planet, c.h));
+    const href = opts.hdotRef ? opts.hdotRef(c) : 0;
+    const need = (g - vt * vt / r + c.drag * Math.sin(c.gamma) - k * (hdot - href)) / Math.cos(c.gamma);
+    const cb = Math.max(opts.cosMin ?? 0, Math.min(1, need / lift));
+    return { bank: Math.acos(cb), alpha };
+  };
+}
+
+/** Keplerian apoapsis altitude (m) of an inertial state; Infinity if hyperbolic. */
+export function apoapsisAltitude(planet, st) {
+  const [x, y, vx, vy] = st;
+  const r = Math.hypot(x, y), v2 = vx * vx + vy * vy;
+  const eps = v2 / 2 - planet.mu / r;
+  if (eps >= 0) return Infinity;
+  const a = -planet.mu / (2 * eps);
+  const hmom = x * vy - y * vx;
+  const e = Math.sqrt(Math.max(0, 1 - hmom * hmom / (planet.mu * a)));
+  return a * (1 + e) - planet.R;
+}
+
+/**
+ * Fly one pass through the atmosphere at constant bank until atmospheric exit
+ * (h > hExit climbing) or the ground. Used by aerocapture prediction and
+ * aerobraking. Returns { exit, apoapsis, samples, heatLoad, dv }.
+ */
+export function atmosphericPass({ planet = MARS, vehicle, inclinationDeg = 0, init, bankDeg = 0, hExit = 130e3, dt = 1, guidance } = {}) {
+  const w = planet.omega * Math.cos(inclinationDeg * DEG);
+  const veh = { ...STARSHIP_ENTRY, ...(vehicle ?? {}) };
+  let last = null;
+  const res = simulateEntry({
+    planet, vehicle: veh, inclinationDeg, init, dt, hMin: 0, tMax: (init.t ?? 0) + 4000,
+    guidance: guidance ?? ((c) => ({ bank: bankDeg * DEG, alpha: alphaSchedule(c.M, c.veh) })),
+    stop: (c) => { last = c; return c.gamma > 0 && c.h > hExit; },
+  });
+  const s = res.samples;
+  const exit = s.at(-1).h > hExit;
+  const apo = exit ? apoapsisAltitude(planet, last.st) : -Infinity;
+  const vIn = s[0].v, vOut = s.at(-1).v;
+  return { exit, apoapsis: apo, samples: s, heatLoad: res.heatLoad, dv: vIn - vOut,
+    peakHeat: Math.max(...s.map((q) => q.heat)), peakDecel: Math.max(...s.map((q) => q.aeroAccel)), peakQ: Math.max(...s.map((q) => q.q)), w };
+}
+
+/**
+ * Aerocapture predictor-corrector: returns guidance(ctx) that every `cycle`
+ * seconds re-solves (secant on cos(bank)) for the constant bank whose
+ * predicted exit apoapsis equals targetApoapsis (m).
+ */
+export function aerocaptureGuidance({ targetApoapsis, cycle = 10, inclinationDeg = 0 } = {}) {
+  let cb = 0.3, tNext = -Infinity;
+  const predict = (c, cosb) => {
+    const d = describe(c.planet, c.st, c.w);
+    const p = atmosphericPass({ planet: c.planet, vehicle: c.veh, inclinationDeg, dt: 2,
+      init: { t: c.t, h: d.h, v: d.v, gammaDeg: d.gamma / DEG }, bankDeg: Math.acos(Math.max(-1, Math.min(1, cosb))) / DEG });
+    return p.exit ? p.apoapsis : -1e7;
+  };
+  return (c) => {
+    const alpha = alphaSchedule(c.M, c.veh);
+    if (c.t >= tNext && c.h < 200e3) {
+      tNext = c.t + cycle;
+      let x0 = Math.max(-1, cb - 0.2), x1 = Math.min(1, cb + 0.2);
+      let f0 = predict(c, x0) - targetApoapsis, f1 = predict(c, x1) - targetApoapsis;
+      for (let i = 0; i < 8 && Math.abs(f1) > 5e3 && f1 !== f0; i++) {
+        const x2 = Math.max(-1, Math.min(1, x1 - f1 * (x1 - x0) / (f1 - f0)));
+        x0 = x1; f0 = f1; x1 = x2; f1 = predict(c, x1) - targetApoapsis;
+      }
+      cb = x1;
+    }
+    return { bank: Math.acos(Math.max(-1, Math.min(1, cb))), alpha };
+  };
 }
 
 /** Linear interpolation of a sample series at time t. */

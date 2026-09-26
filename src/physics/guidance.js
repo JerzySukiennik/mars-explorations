@@ -181,3 +181,55 @@ export function decelDemand(v, h, gamma, vGate, hGate, g) {
   if (path <= 1) return Infinity;
   return (v * v - vGate * vGate) / (2 * path) + g * s;
 }
+
+// ---------------------------------------------------------------------------
+// Ship: closed-loop insertion guidance (vertical-channel explicit guidance)
+// ---------------------------------------------------------------------------
+
+/**
+ * Cutoff (insertion) state on a target orbit at radius rT: inertial speed,
+ * horizontal speed and radial rate.
+ */
+export function insertionTarget(mu, R, perigeeAlt, apogeeAlt, insertionAlt) {
+  const rp = R + perigeeAlt, ra = R + apogeeAlt, rT = R + insertionAlt;
+  const a = 0.5 * (rp + ra);
+  const hAng = Math.sqrt(mu * 2 * rp * ra / (rp + ra));
+  const v = Math.sqrt(mu * (2 / rT - 1 / a));
+  const vh = hAng / rT;
+  return { rT, v, vh, hdot: Math.sqrt(Math.max(0, v * v - vh * vh)) };
+}
+
+/**
+ * Burn time to gain dv with exhaust velocity ve, mass m, mass flow mdot,
+ * current thrust F, with an acceleration cap aMax (throttle-down once the
+ * cap is reached).
+ */
+export function timeToGo(dv, ve, m, mdot, F, aMax) {
+  if (!(mdot > 0) || !(F > 0)) return Infinity;
+  const m1 = Math.min(m, F / aMax);          // mass at which the cap is reached
+  const dv1 = ve * Math.log(m / m1);
+  if (dv <= dv1) return (m / mdot) * (1 - Math.exp(-dv / ve));
+  return (m - m1) / mdot + (dv - dv1) / aMax;
+}
+
+/**
+ * Thrust direction for the insertion burn. The radial channel flies a
+ * linear-in-time vertical acceleration that meets both the target radius
+ * and radial rate at cutoff (t_go from the rocket equation); the remaining
+ * thrust goes into the in-plane horizontal direction.
+ * @param {object} s  { r, v (inertial), aThrust (m/s^2), g (m/s^2) }
+ * @param {object} tgt insertionTarget(...)
+ * @param {number} tgo s
+ */
+export function insertionSteering(s, tgt, tgo) {
+  const up = unit(s.r);
+  const rr = norm(s.r);
+  const hdot = dot(s.v, up);
+  const vhVec = sub(s.v, scale(up, hdot));
+  const vh = norm(vhVec);
+  const T = Math.max(tgo, 8);
+  const a0 = (6 * (tgt.rT - rr - hdot * T)) / (T * T) - (2 * (tgt.hdot - hdot)) / T;
+  const need = a0 + s.g - (vh * vh) / rr;               // net of centrifugal relief
+  const sinT = Math.max(-0.8, Math.min(0.8, need / s.aThrust));
+  return add(scale(unit(vhVec), Math.sqrt(1 - sinT * sinT)), scale(up, sinT));
+}

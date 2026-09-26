@@ -208,7 +208,7 @@ void main(){
     vec3 cn = gnoised(rc * 16.0 + 0.3 * rdn.yz, 85u);
     crack = (1.0 - smoothstep(0.0, 0.05 + fw * 25.0, abs(cn.x))) * smoothstep(0.1, 0.5, gnoise(rc * 3.0, 86u));
     gRock += crack * sign(cn.x) * normalize(cn.yz + 1e-5) * 0.5;
-    float dn = fbm(rc * 42.0, 3, 81u) + 0.45 * fbm(rc * 7.0, 2, 82u) + 0.25 * (1.0 - steep) + 0.35 * (D.z - 0.5) - 0.05 + 0.6 * rdn.x * 0.3;
+    float dn = fbm(rc * 42.0, 3, 81u) + 0.45 * fbm(rc * 7.0, 2, 82u) + 0.25 * (1.0 - steep) + 0.35 * (D.z - 0.5) - 0.28 + 0.18 * rdn.x;
     float dust = smoothstep(-0.04, 0.06 + fw * 30.0, dn);
     rockA = mix(uRockClean, uRockDust, dust) * (0.92 + 0.16 * D.z) * (1.0 + 0.10 * rdn.x + 0.03 * rdn2.x) * (1.0 - 0.45 * crack);
   }
@@ -289,8 +289,8 @@ export class Terrain {
       uHaze: { value: new THREE.Vector3(0.05, 0.035, 0.022) }, uHazeL: { value: 2500 },
       uBoxInv: { value: boxInv }, uBoxN: { value: 0 },
       uSand: { value: new THREE.Vector3(0.24, 0.180, 0.104) },
-      uRockDust: { value: new THREE.Vector3(0.48, 0.305, 0.142) },
-      uRockClean: { value: new THREE.Vector3(0.35, 0.305, 0.235) },
+      uRockDust: { value: new THREE.Vector3(0.45, 0.29, 0.138) },
+      uRockClean: { value: new THREE.Vector3(0.30, 0.262, 0.205) },
       uPebble: { value: new THREE.Vector3(0.44, 0.30, 0.16) },
     };
     this.material = new THREE.ShaderMaterial({ vertexShader: VERT, fragmentShader: FRAG, uniforms: this.uniforms, extensions: {} });
