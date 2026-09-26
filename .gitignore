@@ -3,3 +3,5 @@ work/
 # SpaceX webcast frames: used locally as blind references only; licence unclear, not redistributed. See refs/real/MANIFEST.json for sources.
 refs/real/ship_*/
 refs/real/booster/
+# NASA raw images: public domain but large; restore with tools/fetch_refs.py (URLs in MANIFEST.json)
+refs/real/mars_*/

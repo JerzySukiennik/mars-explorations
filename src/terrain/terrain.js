@@ -200,17 +200,23 @@ void main(){
     float steep = smoothstep(0.8, 2.0, gl0);
     vec2 hn = g / max(gl0, 1e-6);
     vec2 rc = mix(xz, vec2(dot(xz, vec2(-hn.y, hn.x)), p.y + 0.3 * dot(xz, hn)), steep);
-    rdn = fbmd(rc * 38.0, 4, 83u, 0.6);
+    rdn = fbmd(rc * 22.0, 2, 83u, 0.5);
+    // crumbly relief: ridged noise (sharp crests, rounded hollows), 3 octaves
+    float rh = 0.0; vec2 rgr = vec2(0.0); { vec2 q = rc * 48.0; float a = 1.0, f = 48.0; mat2 m = mat2(1.0);
+      for (int k = 0; k < 3; k++){ vec3 nn = gnoised(q, 87u + uint(k) * 7u); float r1 = 1.0 - abs(nn.x); rh += a * r1 * r1;
+        rgr += a * f * (transpose(m) * (-2.0 * r1 * sign(nn.x) * nn.yz)); q = ROT * q * 2.1; m = ROT * m; f *= 2.1; a *= 0.45; } }
     vec3 rdn2 = fbmd(rc * 170.0, 2, 84u, 0.5);
     float fr = clamp(1.0 - fw * 170.0 * 0.5, 0.0, 1.0);
-    gRock = rdn.yz * 0.0032 * 38.0 + rdn2.yz * 0.00025 * 170.0 * fr;
+    float fr2 = clamp(1.0 - fw * 100.0 * 0.5, 0.0, 1.0);
+    gRock = rdn.yz * 0.004 * 22.0 + rgr * 0.0022 * fr2 + rdn2.yz * 0.0003 * 170.0 * fr;
     // fine fractures: zero-crossings of a warped noise, sparse
     vec3 cn = gnoised(rc * 16.0 + 0.3 * rdn.yz, 85u);
     crack = (1.0 - smoothstep(0.0, 0.05 + fw * 25.0, abs(cn.x))) * smoothstep(0.1, 0.5, gnoise(rc * 3.0, 86u));
     gRock += crack * sign(cn.x) * normalize(cn.yz + 1e-5) * 0.5;
-    float dn = fbm(rc * 42.0, 3, 81u) + 0.45 * fbm(rc * 7.0, 2, 82u) + 0.25 * (1.0 - steep) + 0.35 * (D.z - 0.5) - 0.28 + 0.18 * rdn.x;
-    float dust = smoothstep(-0.04, 0.06 + fw * 30.0, dn);
-    rockA = mix(uRockClean, uRockDust, dust) * (0.92 + 0.16 * D.z) * (1.0 + 0.10 * rdn.x + 0.03 * rdn2.x) * (1.0 - 0.45 * crack);
+    vec2 gm = g + gRock; vec3 nm = normalize(vec3(-gm.x, 1.0, -gm.y));
+    float dn = nm.y + 0.22 * fbm(rc * 9.0, 2, 81u) + 0.08 * (D.z - 0.5) + 0.05 * gnoise(rc * 60.0, 82u);
+    float dust = smoothstep(0.25, 0.75, 0.3 + 0.35 * (nm.y - 0.75) + 0.5 * fbm(rc * 8.0, 3, 81u) + 0.35 * (rh - 0.6) + 0.2 * (D.z - 0.5));
+    rockA = mix(uRockClean, uRockDust, dust) * (0.92 + 0.16 * D.z) * (1.0 + 0.06 * rdn.x) * (1.0 - 0.45 * crack);
   }
 
   // normal
@@ -290,7 +296,7 @@ export class Terrain {
       uBoxInv: { value: boxInv }, uBoxN: { value: 0 },
       uSand: { value: new THREE.Vector3(0.24, 0.180, 0.104) },
       uRockDust: { value: new THREE.Vector3(0.45, 0.29, 0.138) },
-      uRockClean: { value: new THREE.Vector3(0.30, 0.262, 0.205) },
+      uRockClean: { value: new THREE.Vector3(0.30, 0.262, 0.212) },
       uPebble: { value: new THREE.Vector3(0.44, 0.30, 0.16) },
     };
     this.material = new THREE.ShaderMaterial({ vertexShader: VERT, fragmentShader: FRAG, uniforms: this.uniforms, extensions: {} });

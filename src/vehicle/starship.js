@@ -39,12 +39,12 @@ export function makeStack(THREE, { envMap, tileCenter = 0.35 } = {}) {
     let fr = Math.max(frostLox, frostCh4) * (.75 + .25 * s);
     const ring = Math.abs(((y / 1.83) % 1) - .5) < .03 ? .08 : 0;   // barrel-section welds
     const steel = [.55, .54, .52];
-    const frost = [.84, .82, .80];
+    const frost = [.80, .77, .74];
     const c = steel.map((a, i) => (a * (1 - fr) + frost[i] * fr) * (1 - ring));
     if (y < 3.2) c.forEach((_, i) => c[i] *= .45);                   // aft skirt / heat shield
     return { c, rough: fr > .3 ? .85 : .32, metal: fr > .3 ? .15 : 1 };
   });
-  const bMat = new THREE.MeshStandardMaterial({ map: bmaps.map, roughnessMap: bmaps.orm, metalnessMap: bmaps.orm, roughness: 1, metalness: 1, envMap, envMapIntensity: 1 });
+  const bMat = new THREE.MeshStandardMaterial({ map: bmaps.map, roughnessMap: bmaps.orm, metalnessMap: bmaps.orm, roughness: 1, metalness: 1, envMap, envMapIntensity: .35 });
   const booster = new THREE.Mesh(new THREE.CylinderGeometry(R, R, LB, 64, 8, false), bMat);
   booster.position.y = LB / 2; grp.add(booster);
   const dark = new THREE.MeshStandardMaterial({ color: 0x1b1a19, roughness: .7, metalness: .3, envMap });
@@ -92,7 +92,7 @@ export function makeStack(THREE, { envMap, tileCenter = 0.35 } = {}) {
     let d = Math.abs(((th - tileCenter) + Math.PI * 3) % (Math.PI * 2) - Math.PI);
     const y = v * LS;
     const hex = (Math.abs(Math.sin(u * 900) * Math.sin(v * 800)) > .96) ? .6 : 1; // grout lines
-    if (d < tileHalf) return { c: [.085 * hex, .080 * hex, .076 * hex], rough: .55, metal: 0 };
+    if (d < tileHalf) return { c: [.20 * hex, .19 * hex, .185 * hex], rough: .6, metal: 0 };   // sRGB-encoded; ~5 % linear albedo
     const fr = y > 3 && y < 26 ? .35 : 0;          // ship tanks lightly frosted
     const c = [.56 + fr * .25, .55 + fr * .25, .53 + fr * .26];
     return { c, rough: .3 + fr * .4, metal: 1 - fr * .6 };
@@ -101,12 +101,12 @@ export function makeStack(THREE, { envMap, tileCenter = 0.35 } = {}) {
   const ship = new THREE.Mesh(new THREE.LatheGeometry(pts, 96), sMat);
   ship.position.y = y0; grp.add(ship);
   // flaps: forward pair high on the nose, aft pair at the base; on the tile/leeward boundary
-  const flapMat = new THREE.MeshStandardMaterial({ color: 0x151414, roughness: .8, metalness: .1, envMap });
+  const flapMat = new THREE.MeshStandardMaterial({ color: 0x3a3634, roughness: .7, metalness: .1, envMap });
   for (const s of [-1, 1]) {
     const a = tileCenter + s * Math.PI / 2;
-    const ff = new THREE.Mesh(new THREE.BoxGeometry(.5, 8, 2.4), flapMat);
+    const ff = new THREE.Mesh(new THREE.BoxGeometry(.4, 7, 1.8), flapMat);
     ff.position.set(Math.sin(a) * (prof(40 / LS) + .9), y0 + 40, Math.cos(a) * (prof(40 / LS) + .9)); ff.rotation.y = a; grp.add(ff);
-    const af = new THREE.Mesh(new THREE.BoxGeometry(.5, 10, 3.0), flapMat);
+    const af = new THREE.Mesh(new THREE.BoxGeometry(.4, 9, 2.2), flapMat);
     af.position.set(Math.sin(a) * (R + 1.2), y0 + 6.5, Math.cos(a) * (R + 1.2)); af.rotation.y = a; grp.add(af);
   }
   grp.userData.height = y0 + LS;

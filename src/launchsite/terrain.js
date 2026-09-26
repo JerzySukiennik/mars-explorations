@@ -84,21 +84,21 @@ export function makeTerrain(THREE, { camPos, sunDir, sunCol, skyIrr, flamePos, f
         // zones: marsh/scrub (near, west of the site), open bay with vegetated
         // islands and levee lines (far west / north), bare wet sand flats between
         // the site and the dune ridge
-        float bay = smoothstep(3000., 4600., s + .15 * max(-p.x, 0.) + 1200. * (wf - .5));
+        float bay = smoothstep(3500., 4700., s + .15 * max(-p.x, 0.) + 900. * (wf - .5));
         float flats = smoothstep(-300., 50., p.x + 300. * (wf - .5)) * (1. - bay);
         float marshZ = (1. - bay) * (1. - flats);
         // bay: water except islands; flats: water in the lows; marsh: mostly dry
-        float wet = wf + bay * .09 + flats * .06 - marshZ * .36;
+        float wet = wf + bay * .08 + flats * .06 - marshZ * .36;
         water = smoothstep(.555, .575, wet);
         water *= 1. - dune;
         // meandering tidal channels (ridged noise): open water in the marsh...
         float ch = abs(fbm2f(q * vec2(1. / 520., 1. / 1400.) + 11.3, fp / 520., 5) - .5);
-        water = max(water, (1. - smoothstep(.003, .006, ch)) * (1. - dune) * marshZ * .35);
+        water = max(water, (1. - smoothstep(.002, .005, ch)) * (1. - dune) * marshZ * .25);
         float ch2 = abs(fbm2f(q / 190. + 4.7, fp / 190., 4) - .5);
-        water = max(water, (1. - smoothstep(.008, .015, ch2)) * (1. - dune) * (.25 * marshZ + .6 * flats) * smoothstep(.35, .5, wf));
+        water = max(water, (1. - smoothstep(.008, .015, ch2)) * (1. - dune) * (.6 * flats) * smoothstep(.35, .5, wf));
         // ...and dark vegetated levees snaking through the open bay
         float lev = abs(fbm2f(q * vec2(1. / 800., 1. / 3000.) + 2.2, fp / 800., 5) - .5);
-        float levee = (1. - smoothstep(.010, .022, lev)) * bay;
+        float levee = (1. - smoothstep(.018, .034, lev)) * bay;
         water *= 1. - levee;
         vec3 marsh = mix(vec3(.024, .022, .009), vec3(.040, .035, .014), vnoise2(p / 140.));
         vec3 bare = mix(vec3(.26, .215, .175), vec3(.36, .30, .25), vnoise2(p / 220.));
@@ -130,7 +130,7 @@ export function makeTerrain(THREE, { camPos, sunDir, sunCol, skyIrr, flamePos, f
         vec3 R = reflect(V, vec3(0., 1., 0.));
         float cosi = max(-V.y, 0.);
         float F = .02 + .98 * pow(1. - cosi, 5.);
-        vec3 wcol = skyColor(normalize(R + vec3(0., .016, 0.))) * F + vec3(.020, .019, .015) * (1. - F);
+        vec3 wcol = skyColor(normalize(R + vec3(0., .034, 0.))) * F + vec3(.020, .019, .015) * (1. - F);
         col = mix(col, wcol, water);
         // ---------------- sea ----------------
         if (isSea > .5) {
@@ -139,13 +139,13 @@ export function makeTerrain(THREE, { camPos, sunDir, sunCol, skyIrr, flamePos, f
           // swell crests run parallel to the shore (long in s, short across)
           float sw = vnoise2(vec2(dx / 30., s / 420.)) * .7 + vnoise2(vec2(dx / 11., s / 160.)) * .3;
           float lod = smoothstep(.2, 2.5, fp / 6.);
-          float slope = (sw - .5) * .07 * (1. - lod * .5);
+          float slope = (sw - .5) * .045 * (1. - lod * .5);
           float ci = clamp(cosi + .115 + slope, 0., 1.);
           float Fs = .02 + .98 * pow(1. - ci, 5.);
           vec3 Rs = normalize(vec3(R.x, max(R.y, 0.) + .03 + max(slope, 0.) * .5, R.z));
           vec3 sea = skyColor(Rs) * vec3(1., .97, .92) * Fs * .56 + vec3(.009, .010, .010) * (1. - Fs);
           // surf zone (~150 m): spilling breakers + streaky residual foam
-          float surf = 1. - smoothstep(20., 160., dx);
+          float surf = 1. - smoothstep(20., 120., dx);
           float br = 0.;
           for (int i = 0; i < 5; i++) {
             float lineD = 10. + float(i) * 30. + 12. * vnoise2(vec2(float(i) * 7., s / 180.));
@@ -154,7 +154,7 @@ export function makeTerrain(THREE, { camPos, sunDir, sunCol, skyIrr, flamePos, f
           }
           br += surf * .45 * smoothstep(.62, .85, vnoise2(vec2(dx / 6., s / 45.))) + surf * .15 * vnoise2(vec2(dx / 25., s / 200.));
           br += (1. - smoothstep(0., 10., dx)) * .8;   // swash
-          br *= 1. - smoothstep(10., 80., fpx) * .6;
+          br *= 1. - smoothstep(4., 40., fpx) * .85;
           vec3 foamC = vec3(.62, .60, .58) / 3.1416 * E;
           sea = mix(sea, foamC, clamp(br, 0., 1.) * .75);
           col = sea;

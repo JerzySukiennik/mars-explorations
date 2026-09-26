@@ -96,12 +96,30 @@ export function alphaSchedule(M, veh = STARSHIP_ENTRY) {
   return veh.alphaHyp + (veh.alphaSub - veh.alphaHyp) * f;
 }
 
+/**
+ * Effective ratio of specific heats in the shock layer (equilibrium real gas).
+ * Above ~2 km/s vibrational excitation and then O2 (N2 / CO2) dissociation
+ * soak up energy: the normal-shock density ratio eps rises from the perfect-gas
+ * limit (g+1)/(g-1) (6 for air) to ~15 at 7.5 km/s (equilibrium-air normal
+ * shock tables, e.g. Anderson, Hypersonic and High-Temperature Gas Dynamics,
+ * ch. 14; Mars CO2 dissociates earlier and reaches ~17-19). The Newtonian
+ * stagnation pressure uses gamma_eff = (eps+1)/(eps-1).
+ */
+export function shockLayerGamma(planet, v) {
+  const g = planet.gamma;
+  const eps0 = (g + 1) / (g - 1);
+  const epsHi = planet.gas === 'co2' ? 18 : 15;
+  const f = Math.max(0, Math.min(1, (v - 2000) / 5500));
+  const eps = eps0 + (epsHi - eps0) * f;
+  return (eps + 1) / (eps - 1);
+}
+
 /** Air-data and aerodynamic accelerations at altitude h (m) and air-relative speed v (m/s). */
 export function aeroState(planet, veh, h, v, alpha) {
   const s = planet.atm(h);
   const M = v / s.a;
   const Re1 = s.rho * v / viscosity(s.T, planet.gas);
-  const c = coefficients(alpha, M, Re1, { geom: veh.geom, g: planet.gamma, flap: veh.flap ?? 0 });
+  const c = coefficients(alpha, M, Re1, { geom: veh.geom, g: shockLayerGamma(planet, v), flap: veh.flap ?? 0 });
   const q = 0.5 * s.rho * v * v;
   const A = refArea(veh.geom);
   return { ...s, M, q, CL: c.CL, CD: c.CD, LD: c.LD, drag: q * c.CD * A / veh.mass, lift: q * c.CL * A / veh.mass };
@@ -219,19 +237,44 @@ export function scaleHeight(planet, h) {
 export function altitudeRateGuidance(opts = {}) {
   const zeta = opts.zeta ?? 0.7;
   const act = opts.activation ?? 0.05 * 9.80665;
+  const aMod = opts.alphaMin != null;              // angle-of-attack modulation enabled
+  const aMax = opts.alphaMax ?? null, aMin = opts.alphaMin ?? null;
+  const pitchRate = (opts.pitchRateDeg ?? 1) * DEG;  // rad/s, body-flap limited
+  let aHyp = null, tLast = null;
   return (c) => {
-    const alpha = alphaSchedule(c.M, c.veh);
-    if (c.drag < act) return { bank: 0, alpha };
+    const hi = aMax ?? c.veh.alphaHyp;
+    if (aHyp == null) aHyp = hi;
+    const dt = tLast == null ? 0 : c.t - tLast; tLast = c.t;
+    const sched = (ah) => alphaSchedule(c.M, { ...c.veh, alphaHyp: ah });
+    if (c.drag < act) return { bank: 0, alpha: sched(aHyp) };
     const r = c.planet.R + c.h;
     const vt = c.v * Math.cos(c.gamma) + c.w * r;          // inertial horizontal speed
     const g = c.planet.mu / (r * r);
     const hdot = c.v * Math.sin(c.gamma);
-    const lift = Math.max(c.drag * c.LD, 1e-4);
-    const k = 2 * zeta * Math.sqrt(lift / scaleHeight(c.planet, c.h));
     const href = opts.hdotRef ? opts.hdotRef(c) : 0;
-    const need = (g - vt * vt / r + c.drag * Math.sin(c.gamma) - k * (hdot - href)) / Math.cos(c.gamma);
-    const cb = Math.max(opts.cosMin ?? 0, Math.min(1, need / lift));
-    return { bank: Math.acos(cb), alpha };
+    const liftAt = (a) => {
+      const s = aeroState(c.planet, c.veh, c.h, c.v, sched(a));
+      return { lift: Math.max(s.lift, 1e-4), drag: s.drag };
+    };
+    const needAt = (ls) => {
+      const k = 2 * zeta * Math.sqrt(ls.lift / scaleHeight(c.planet, c.h));
+      return (g - vt * vt / r + ls.drag * Math.sin(c.gamma) - k * (hdot - href)) / Math.cos(c.gamma);
+    };
+    let target = hi;
+    if (aMod) {
+      // Lift saturated at the current attitude: pitch down (less drag, more L/D)
+      // before giving up altitude; pitch back up while bank margin remains.
+      const cur = liftAt(aHyp);
+      const ratio = needAt(cur) / cur.lift;
+      if (ratio > 1) target = aMin;
+      else if (ratio < (opts.pitchUpMargin ?? 0.9)) target = hi;
+      else target = aHyp;
+    }
+    const step = pitchRate * dt;
+    aHyp += Math.max(-step, Math.min(step, target - aHyp));
+    const ls = liftAt(aHyp);
+    const cb = Math.max(opts.cosMin ?? -1, Math.min(1, needAt(ls) / ls.lift));
+    return { bank: Math.acos(cb), alpha: sched(aHyp) };
   };
 }
 

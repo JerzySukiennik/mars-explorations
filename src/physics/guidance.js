@@ -53,8 +53,9 @@ export function localFrame(r) {
 
 /**
  * Thrust direction for the stacked ascent.
- * @param {object} s    { t, r, vRel } (t in s after clamp release)
- * @param {object} p    { tVertical, tKick, kickDeg, azimuthDeg }
+ * @param {object} s    { t, r, vRel, tTurn } (t in s after clamp release;
+ *                       tTurn = time the upper-atmosphere steering began)
+ * @param {object} p    { tVertical, tKick, kickDeg, azimuthDeg, pitchRateDeg }
  */
 export function boosterPitchProgram(s, p) {
   const { up, east, north } = localFrame(s.r);
@@ -71,7 +72,18 @@ export function boosterPitchProgram(s, p) {
   // attitude, fly zero angle of attack; until then hold the kick attitude.
   const vDir = unit(s.vRel);
   const vTilt = Math.acos(Math.max(-1, Math.min(1, dot(vDir, up))));
-  if (vTilt >= kick) return vDir;
+  if (vTilt >= kick) {
+    // Above the sensible atmosphere (after max-Q, once q has decayed below
+    // qTurn) the booster steers nose-down of its velocity at a constant
+    // pitch-over rate, flattening the trajectory toward the staging
+    // flight-path angle (a linear approximation of optimal vacuum steering).
+    if (s.tTurn !== undefined && s.tTurn !== null && p.pitchRateDeg) {
+      const d = (p.pitchRateDeg * (s.t - s.tTurn) * Math.PI) / 180;
+      const n = unit(sub(up, scale(vDir, dot(up, vDir))));
+      return add(scale(vDir, Math.cos(d)), scale(n, -Math.sin(d)));
+    }
+    return vDir;
+  }
   return add(scale(up, Math.cos(kick)), scale(downrange, Math.sin(kick)));
 }
 

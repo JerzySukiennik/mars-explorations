@@ -110,7 +110,7 @@ float slabH(vec2 p, out float tint){
   vec2 tilt = (vec2(r2, r3) - 0.5) * 0.22;
   float top = e + dot(tilt, p - cw);
   // rounded, weathered rim: convex (parabolic) drop towards the fracture / sand
-  float edm = v.y / (FREQ * 1.25) + 0.012 * fbm(p * 18.0, 3, 48u);
+  float edm = v.y / (FREQ * 1.25) + 0.022 * fbm(p * 11.0, 3, 48u) + 0.006 * gnoise(p * 50.0, 53u);
   float ew = 0.03 + 0.06 * r4;
   float sN = clamp(edm / ew, 0.0, 1.0);
   top -= 0.09 * (1.0 - sN) * (1.0 - sN);

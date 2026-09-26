@@ -60,10 +60,22 @@ test('settling acceleration dominates gravity gradient and drag', () => {
 });
 
 test('boil-off scales with wetted fill; more heat -> more tankers', () => {
-  const full = R.boiloff(R.PARAMS, 1), half = R.boiloff(R.PARAMS, 0.5);
+  const full = R.boiloff(R.PARAMS, 1, false), half = R.boiloff(R.PARAMS, 0.5, false);
   assert.ok(half.mdot < full.mdot && half.mdot > 0.4 * full.mdot);
-  const hot = R.campaign({ ...R.PARAMS, parasiticW: 40000 });
+  const hot = R.campaign({ ...R.PARAMS, receiverMli: false });
   assert.ok(hot.tankers > R.campaign().tankers);
+});
+
+test('MLI-blanketed receiver boils off several times less than a bare ship', () => {
+  const bare = R.boiloff(R.PARAMS, 1, false).pctPerDay, mli = R.boiloff(R.PARAMS, 1, true).pctPerDay;
+  assert.ok(bare > 3 * mli, `bare ${bare} vs mli ${mli}`);
+  // Modified Lockheed: more layers -> less heat flux
+  assert.ok(R.mliFlux(250, 90, { ...R.PARAMS, mliLayers: 60 }) < R.mliFlux(250, 90));
+});
+
+test('gravity-gradient lever arm is the liquid, not the nose', () => {
+  const top = R.tankStackTop();
+  assert.ok(top > 20 && top < V.SHIP.length);
 });
 
 test('campaign log is monotonic and ends full', () => {

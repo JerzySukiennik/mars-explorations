@@ -37,7 +37,7 @@ export async function create({ THREE, renderer, params }) {
   const sunDir = new THREE.Vector3(Math.sin(1.22), 0.085, -Math.cos(1.22)).normalize();
   const sunCol = new THREE.Vector3(1.05, .46, .19);        // strongly reddened through marine haze
   const skyIrr = new THREE.Vector3(.72, .70, .70);        // pi * mean sky radiance
-  const flameLightCol = new THREE.Vector3(1.0, .165, .018); // exhaust + afterburning, as seen by the camera
+  const flameLightCol = new THREE.Vector3(1.0, .23, .025); // exhaust + afterburning, as seen by the camera
 
   // ascent state
   let tNow = 10;
@@ -56,17 +56,17 @@ export async function create({ THREE, renderer, params }) {
   const envMap = pm.fromScene(envScene, 0.02).texture;
 
   // lights for the standard-material objects (towers, vehicle)
-  const sun = new THREE.DirectionalLight(new THREE.Color(sunCol.x, sunCol.y, sunCol.z), 5.0);
+  const sun = new THREE.DirectionalLight(new THREE.Color(sunCol.x, sunCol.y, sunCol.z), 11.0);
   sun.position.copy(sunDir).multiplyScalar(1000); scene.add(sun);
-  const hemi = new THREE.HemisphereLight(new THREE.Color(.25, .235, .235), new THREE.Color(.09, .06, .04), 2.4);
+  const hemi = new THREE.HemisphereLight(new THREE.Color(.25, .235, .235), new THREE.Color(.12, .06, .03), 1.6);
   scene.add(hemi);
   const flameLight = new THREE.PointLight(new THREE.Color(flameLightCol.x, flameLightCol.y, flameLightCol.z), 1, 0, 2);
   scene.add(flameLight);
   // the sunlit/plume-lit steam cloud itself is a huge warm area light for the
   // lower booster and the tower (represented by two broad point lights)
-  const cloudGlowL = new THREE.PointLight(new THREE.Color(1.0, .30, .07), 1.6e5, 0, 2);
+  const cloudGlowL = new THREE.PointLight(new THREE.Color(1.0, .30, .07), 2.1e5, 0, 2);
   cloudGlowL.position.set(-90, 45, 140); scene.add(cloudGlowL);
-  const cloudGlowR = new THREE.PointLight(new THREE.Color(1.0, .34, .08), 1.6e5, 0, 2);
+  const cloudGlowR = new THREE.PointLight(new THREE.Color(1.0, .34, .08), 2.1e5, 0, 2);
   cloudGlowR.position.set(110, 50, 120); scene.add(cloudGlowR);
 
   // terrain + SPI skyline
@@ -77,10 +77,10 @@ export async function create({ THREE, renderer, params }) {
   scene.add(makeSPI(THREE, rng, bldMat, camera.position));
 
   // towers: Pad A (with the stack) and Pad B further north-west
-  const towerMat = new THREE.MeshStandardMaterial({ color: 0x8a847c, roughness: .7, metalness: .2, envMap });
+  const towerMat = new THREE.MeshStandardMaterial({ color: 0x8a847c, roughness: .55, metalness: .45, envMap });
   const towerA = makeTower(THREE, towerMat, null, { w: 13, faceDir: new THREE.Vector3(Math.cos(0.45), 0, Math.sin(0.45) + .15), armY: 127, armOpen: .45, qdY: 90 });
   towerA.position.set(-31, 0, -6); towerA.rotation.y = 0.45; scene.add(towerA);
-  const towerB = makeTower(THREE, towerMat, null, { faceDir: new THREE.Vector3(.6, 0, .8), armY: 60, armOpen: .1, withArms: true, qdY: 120 });
+  const towerB = makeTower(THREE, towerMat, null, { faceDir: new THREE.Vector3(.6, 0, .8), armY: 60, armOpen: .1, withArms: false, qdY: 120 });
   towerB.position.set(-331, 0, -580); scene.add(towerB);
   const olm = makeOLM(THREE, towerMat); scene.add(olm);
   const olmB = makeOLM(THREE, towerMat); olmB.position.set(-300, 0, -580); scene.add(olmB);
@@ -100,9 +100,9 @@ export async function create({ THREE, renderer, params }) {
     uInvProj: { value: new THREE.Matrix4() }, uCamWorld: { value: new THREE.Matrix4() }, uCamPos: { value: camera.position },
     uSunDir: { value: sunDir }, uSunCol: { value: sunCol }, uSkyIrr: { value: skyIrr },
     uBlob: { value: blobs.c }, uBlobR: { value: blobs.r },
-    uCol: { value: colBase }, uFlameCol: { value: new THREE.Vector3(1.0, .075, .016) }, uFlameI: { value: 12 },
-    uFlameLight: { value: 620 }, uFlameLightCol: { value: flameLightCol },
-    uHazeS: { value: 1 / 15000 }, uHazeH: { value: 420 }, uCloudSun: { value: new THREE.Vector3(3.2, 1.25, .16) }, uCloudSigma: { value: .30 },
+    uCol: { value: colBase }, uFlameCol: { value: new THREE.Vector3(1.0, .075, .016) }, uFlameI: { value: 16 },
+    uFlameLight: { value: 440 }, uFlameLightCol: { value: flameLightCol },
+    uHazeS: { value: 1 / 15000 }, uHazeH: { value: 420 }, uCloudSun: { value: new THREE.Vector3(3.2, 1.5, .18) }, uCloudSigma: { value: .30 },
   };
   const compMat = makeCompositeMaterial(THREE, cu);
   const fsScene = new THREE.Scene(); const fsQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), compMat); fsScene.add(fsQuad);

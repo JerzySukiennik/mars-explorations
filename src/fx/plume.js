@@ -22,26 +22,26 @@ export function cloudBlobs(THREE, t, seed = 7) {
     // ground jet ring under/around the mount (radial wall jet + deluge steam)
     [-80, 20, 15, 48, 30, 50, .35], [80, 24, 5, 48, 36, 50, .3], [0, 24, -70, 70, 40, 50, .3], [0, 8, 70, 55, 14, 40, .35],
     // left buoyant column (separate from the tower)
-    [-150, 58, -45, 60, 62, 52, .6], [-128, 102, -55, 42, 32, 38, .55], [-75, 38, 10, 48, 34, 44, .5],
+    [-150, 58, -45, 60, 62, 52, .85], [-128, 102, -55, 42, 32, 38, .8], [-75, 38, 10, 48, 34, 44, .6],
     // centre-right mass, immediately right of the exhaust column
     [48, 70, -35, 48, 70, 46, .3], [64, 118, -45, 36, 28, 34, .3],
     // right mass (sunlit), separated from the centre mass by a gap
-    [188, 58, -15, 60, 58, 54, .4], [165, 98, -22, 40, 30, 38, .35], [220, 88, 0, 36, 30, 34, .45],
+    [180, 56, -15, 54, 56, 50, .4], [160, 96, -22, 38, 30, 36, .35], [210, 84, 0, 34, 28, 32, .5],
     // front, low (column visible over it)
     [-45, 10, 110, 50, 13, 42, .4], [60, 10, 100, 48, 13, 40, .4],
     // left low bank drifting west with the onshore breeze
-    [-290, 24, 20, 80, 26, 60, .65], [-390, 16, 50, 72, 18, 55, .75], [-455, 11, 70, 55, 13, 45, .8],
+    [-290, 24, 20, 80, 26, 60, .9], [-390, 16, 50, 72, 18, 55, .95], [-455, 11, 70, 55, 13, 45, 1.],
     // right tail toward the beach: dustier, thinner
     [245, 40, -60, 30, 40, 30, .9], [150, 30, 40, 50, 30, 45, .5],
     // lower filler between masses
-    [-215, 36, -10, 55, 32, 50, .6], [120, 40, -20, 45, 36, 45, .35], [-20, 55, -60, 40, 45, 40, .3],
+    [-215, 36, -10, 55, 32, 50, .85], [120, 40, -20, 45, 36, 45, .35], [-20, 55, -60, 40, 45, 40, .3],
   ];
   const c = [], r = [];
   for (let i = 0; i < NB; i++) {
     const b = base[i];
     const j = () => (rng() - .5);
-    c.push(new THREE.Vector4(b[0] * (0.35 + 0.65 * g) + j() * 8, b[1] * g + j() * 4, b[2] * (0.35 + 0.65 * g) + j() * 8, b[6]));
-    r.push(new THREE.Vector3(b[3] * (0.3 + 0.7 * g), b[4] * (0.3 + 0.7 * g), b[5] * (0.3 + 0.7 * g)));
+    c.push(new THREE.Vector4(b[0] * (0.35 + 0.65 * g) + j() * 8, b[1] * g * .88 + j() * 4, b[2] * (0.35 + 0.65 * g) + j() * 8, b[6]));
+    r.push(new THREE.Vector3(b[3] * (0.3 + 0.7 * g), b[4] * (0.3 + 0.7 * g) * .88, b[5] * (0.3 + 0.7 * g)));
   }
   return { c, r };
 }
@@ -157,7 +157,7 @@ export function makeCompositeMaterial(THREE, u) {
         float yb = uCol.y;
         float below = min(yb - pc.y, 400.);
         // jet radius: ~booster radius at the nozzle exit plane, slowly spreading
-        float wcol = 4.6 + max(below, 0.) * .025;
+        float wcol = 5.0 + max(below, 0.) * .03;
         float prof = smoothstep(-1.5, 0.5, below) * (0.5 + 0.5 * exp(-max(below, 0.) / 45.)) * smoothstep(-2., 6., pc.y);
         vec3 fcol = mix(uFlameCol, vec3(1., .20, .05), exp(-max(below, 0.) / 22.));
         // chord through a soft-edged luminous cylinder (flat-top radial profile)
@@ -183,7 +183,7 @@ export function makeCompositeMaterial(THREE, u) {
               vec3 ld; vec3 Ef = colLight(p, ld);
               float tl = dens(sdCloud(p + ld * 7., 2)) * 7. + dens(sdCloud(p + ld * 22., 1)) * 15. + dens(sdCloud(p + ld * 45., 1)) * 23.;
               float tauL = uCloudSigma * tl;
-              float trL = max(exp(-tauL), .45 * exp(-tauL * .06));
+              float trL = max(exp(-tauL), .32 * exp(-tauL * .07));
               // sun
               vec3 sd = uSunDir;
               float ts = dens(sdCloud(p + sd * 9., 2)) * 9. + dens(sdCloud(p + sd * 28., 1)) * 20. + dens(sdCloud(p + sd * 60., 1)) * 32.
@@ -194,7 +194,7 @@ export function makeCompositeMaterial(THREE, u) {
               float ph = mix(.8, 2.2, pow(max(cth, 0.), 3.)) ;
               // sky ambient: occluded below / inside
               float ao = clamp((sdCloud(p + vec3(0., 16., 0.), 1) + 6.) / 24., 0., 1.) * .8 + .2;
-              vec3 alb = mix(vec3(.97, .93, .88), vec3(.82, .66, .54), dust);
+              vec3 alb = mix(vec3(.97, .93, .88), vec3(.84, .60, .52), dust);
               vec3 S = alb * (Ef * trL + uCloudSun * trS * ph + uSkyIrr / 3.1416 * ao * ao * .22);
               float a = 1. - exp(-sig * dt);
               // cloud behind the column: add column emission when crossing it

@@ -26,7 +26,7 @@ export function runEarthReentry(opts = {}) {
   const res = E.simulateEntry({
     planet: E.EARTH, inclinationDeg: IFT5.inclinationDeg, dt: 0.25,
     init: IFT5.apogee, hMin: 0, tMax: 4200,
-    vehicle: opts.vehicle, guidance: E.altitudeRateGuidance(),
+    vehicle: opts.vehicle, guidance: E.altitudeRateGuidance(opts.guidance ?? {}),
   });
   const s = res.samples;
   const at = (t, k) => E.sampleAt(s, t, k);
@@ -35,8 +35,9 @@ export function runEarthReentry(opts = {}) {
   const desc = s.filter((x) => x.t >= tEI);
   const peak = desc.reduce((a, b) => (b.v > a.v ? b : a));
   const tFlip = cross((x) => x.t > tEI && x.h <= IFT5.flipAltitude);
-  // Altitude plateau: the altitude at which the pull-out levels off (first hdot >= 0 after EI).
-  const level = desc.find((x) => x.gamma >= 0 && x.t > peak.t);
+  // Altitude plateau: where the pull-out levels off = minimum sink rate in the 600 s after peak speed.
+  const level = desc.filter((x) => x.t > peak.t && x.t < peak.t + 600)
+    .reduce((a, b) => (Math.abs(b.v * Math.sin(b.gamma)) < Math.abs(a.v * Math.sin(a.gamma)) ? b : a));
   const table = {
     entry_interface_t_s: tEI,
     entry_interface_speed_kmh: at(tEI, 'v') * 3.6,
@@ -45,7 +46,10 @@ export function runEarthReentry(opts = {}) {
     altitude_plateau_km: level ? level.h / 1e3 : NaN,
     t_speed_below_10000_kmh_s: cross((x) => x.t > peak.t && x.v * 3.6 < 10000),
     t_speed_below_1000_kmh_s: cross((x) => x.t > peak.t && x.v * 3.6 < 1000),
-    max_deceleration_g: Math.max(...desc.map((x) => x.decel)) / 9.80665,
+    // as in the reference: 10-s central difference of the (1 Hz) speed series
+    max_deceleration_g: Math.max(...desc.filter((x) => x.t >= tEI + 5 && x.t <= tFlip - 5)
+      .map((x) => (at(x.t - 5, 'v') - at(x.t + 5, 'v')) / 10)) / 9.80665,
+    max_drag_g: Math.max(...desc.map((x) => x.decel)) / 9.80665,
     terminal_speed_before_flip_kmh: at(tFlip, 'v') * 3.6,
     t_flip_start_s: tFlip,
     peak_heat_flux_kW_m2: Math.max(...desc.map((x) => x.heat)) / 1e3,
@@ -58,7 +62,7 @@ export function runEarthReentry(opts = {}) {
 }
 
 export function toCsv(rows) {
-  return 't,ship_speed_kmh,ship_alt_km\n' + rows.map((r) => `${r.t},${r.ship_speed_kmh},${r.ship_alt_km}`).join('\n') + '\n';
+  return ['t,ship_speed_kmh,ship_alt_km', ...rows.map((r) => `${r.t},${r.ship_speed_kmh},${r.ship_alt_km}`)].join('\r\n') + '\r\n';
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

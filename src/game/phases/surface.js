@@ -303,8 +303,15 @@ export async function create(game) {
     g.fillStyle = '#fff'; g.beginPath(); g.moveTo(0, -7); g.lineTo(4.5, 5); g.lineTo(-4.5, 5); g.closePath(); g.fill(); g.restore();
   }
 
+  // When the scene hands us its rover and terrain streaming, gameplay does the
+  // scene's per-frame work itself (rover pose, mast, camera, terrain.follow,
+  // shadow boxes). Running the scene's own update as well would re-bake the
+  // terrain around its internal camera every frame, so it is skipped.
+  const takeOver = !!(sceneRover && typeof ctx.terrain?.follow === 'function');
+
   return {
     update,
+    sceneDt: takeOver ? () => 0 : undefined,
     help: [['W S', 'Drive forward / reverse'], ['A D', 'Steer'], ['E', 'Action: excavate / unload / fit spare wheel'], ['B', 'Build menu (then 1-4)'], ['C', 'Camera: chase / Navcam / Mastcam-Z / Hazcam / scene'], ['Arrows', 'Pan / tilt the mast'], ['1-7', 'Mastcam-Z focal length 26-110 mm'], ['U', 'Haul autopilot']],
     debug: () => ({ sol: s.sol, t_h: s.t_h, rover: { x: s.rover.x, z: s.rover.z, soc: s.rover.battery.soc }, cart: s.cart, stock: s.stockpile, jobs: s.jobs.map((j) => [j.key, j.status, j.progress]), built: s.built.map((b) => b.key) }),
     dispose() { for (const o of added) scene.remove(o); removeEventListener('keydown', onSceneKey); },

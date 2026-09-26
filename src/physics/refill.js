@@ -76,7 +76,7 @@ export const PARAMS = {
   headerMargin: 0.20,           // landing flight-performance reserve (winds, vT dispersion, engine-out)
   headerResidualFrac: 0.02,
   // mated stack geometry (tail-to-tail docking)
-  shipLength: 50.3,             // m (from V.SHIP.length minus nose tip)
+  aftBayLen: 4.5,               // m, tail (engine skirt) to aft LOX dome
   settlingMargin: 10,           // settling / disturbance (Kutter & Zegler)
   bondMin: 10,                  // interface dominated by body force
   // transfer plumbing
@@ -91,12 +91,28 @@ export const PARAMS = {
   // thermal environment / surfaces
   solar: 1361, albedo: 0.30, earthIR: 237,
   steelAlphaS: 0.40, steelEps: 0.12,
-  tileAlphaS: 0.90, tileEps: 0.85, tileK: 0.035, tileThk: 0.04,
+  // fibrous silica tile: 0.035 W/m/K is the 1-atm value; in vacuum the gas
+  // conduction vanishes and k drops to ~0.015 W/m/K at 100-250 K
+  tileAlphaS: 0.90, tileEps: 0.85, tileK: 0.015, tileThk: 0.04,
   tileFrac: 0.5,                // windward half of the barrel is tiled
+  // Depot / receiving-ship thermal protection: MLI blanket over the bare
+  // (leeward) steel half of the barrel. Modified Lockheed equation (Keller
+  // et al. 1974, NASA CR-134477): layer density in layers/cm; installed
+  // blankets (seams, penetrations, compression) run ~2-3x the lab value.
+  mliLayers: 30, mliDensity: 15, mliDegradation: 3,
+  mliAlphaS: 0.40, mliEps: 0.85,  // beta-cloth outer cover
+  receiverMli: true,            // loitering depot / Mars ship carries MLI
+  tankerMli: false,             // tankers are bare ships (1-day loiter)
   viewEarthNadirHalf: 0.62,     // bare steel half faces nadir
   viewEarthZenithHalf: 0.06,
   albedoOrbitAvg: 0.30,         // orbit-averaged albedo illumination factor
-  parasiticW: 4000,             // conduction through structure/plumbing, W
+  // non-barrel heat paths (see parasiticHeat): skirts, engine mounts,
+  // feed/pressurisation plumbing, tank domes facing the aft/forward bays
+  skirtThk: 0.004, skirtLen: 3.0,       // m: steel skirt conduction path
+  steelK: 10,                           // W/m/K, 304L averaged 90-290 K
+  mountArea: 0.02, mountLen: 1.0,       // per-engine thrust-structure section
+  plumbingW: 150,                       // lines, valves, sensors, QD (W)
+  domeAreaFactor: 1.35,                 // 2:1-ish ellipsoidal dome / pi R^2
   // campaign
   cadenceDays: 6,               // tanker launch interval
   receiverPayloadT: 100,        // cargo on the Mars-bound ship
@@ -316,13 +332,23 @@ export function landingBurn(params = PARAMS) {
 // ---------------------------------------------------------------------------
 // Settling acceleration
 // ---------------------------------------------------------------------------
+/** Height of the top of the main tanks above the tail (m), from the tank volumes. */
+export function tankStackTop(params = PARAMS) {
+  const S = V.CONFIGS[params.config].ship;
+  const A = Math.PI * (S.diameter / 2) ** 2;
+  return params.aftBayLen + (S.loxVolume + S.ch4Volume) / A;
+}
+
 export function settlingAccel(params = PARAMS) {
   const P = params;
   const mu = EARTH.mu, r = EARTH.rEq + P.leoAltKm * 1000;
   const n2 = mu / r ** 3;
   const S = V.CONFIGS[P.config].ship;
-  // mated tail-to-tail stack: liquid farthest from the stack CoM ~ one ship length
-  const xMax = P.shipLength;
+  // mated tail-to-tail stack, CoM near the docking interface. The tidal
+  // (gravity-gradient) acceleration acts on the liquid, so the relevant
+  // lever arm is the farthest liquid from the CoM: the top of the full
+  // main CH4 tank (aft bay + LOX barrel + CH4 barrel), not the ship's nose.
+  const xMax = tankStackTop(P);
   const aGG = 3 * n2 * xMax;                                  // radial-attitude worst case
   const massStack = 2 * (S.dryMass) + S.propMass;             // ~ one ship load split across both
   const atm = atmosphere(P.leoAltKm * 1000);
@@ -363,8 +389,9 @@ export function transferRate(params = PARAMS) {
   const mr = V.PROPELLANT.mixtureRatio;
   const { accel } = settlingAccel(P);
   // settled hydrostatic head adds to the drive (tiny at ~1 mm/s^2)
-  const lox = lineFlow(FLUIDS.lox, P, P.drivePressure + FLUIDS.lox.rho * accel * P.shipLength / 2);
-  const ch4 = lineFlow(FLUIDS.ch4, P, P.drivePressure + FLUIDS.ch4.rho * accel * P.shipLength / 2);
+  const head = tankStackTop(P) / 2;
+  const lox = lineFlow(FLUIDS.lox, P, P.drivePressure + FLUIDS.lox.rho * accel * head);
+  const ch4 = lineFlow(FLUIDS.ch4, P, P.drivePressure + FLUIDS.ch4.rho * accel * head);
   // hold mixture ratio: the limiting line sets the pace, the other throttles
   const loxRate = Math.min(lox.mdot, ch4.mdot * mr);
   const total = loxRate * (1 + mr) / mr;                      // kg/s
@@ -390,6 +417,52 @@ export function chilldownTime(params = PARAMS) {
 // ---------------------------------------------------------------------------
 // Boil-off (orbit-averaged heat balance)
 // ---------------------------------------------------------------------------
+/** Modified Lockheed MLI heat flux (W/m^2) between warm face Th and cold face Tc. */
+export function mliFlux(Th, Tc, P = PARAMS) {
+  const N = P.mliLayers, Nd = P.mliDensity;
+  const solid = 8.95e-8 * Nd ** 2.63 * (Th - Tc) * (Th + Tc) / (2 * (N + 1));
+  const rad = 5.39e-10 * 0.031 * (Th ** 4.67 - Tc ** 4.67) / N;
+  return P.mliDegradation * (solid + rad);
+}
+
+/** Heat through an MLI blanket whose outer cover absorbs qAbs (W/m^2). */
+function mliHeat(qAbs, P, tLiq) {
+  let lo = tLiq, hi = 400;
+  for (let i = 0; i < 100; i++) {
+    const T = 0.5 * (lo + hi);
+    if (P.mliEps * SIGMA_SB * T ** 4 + mliFlux(T, tLiq, P) > qAbs) hi = T; else lo = T;
+  }
+  return mliFlux(0.5 * (lo + hi), tLiq, P);
+}
+
+/**
+ * Heat leaking in through everything but the barrel (W): conduction along
+ * the forward and aft skirts and the engine thrust structure from the
+ * enclosed bays, plumbing, and radiation from the bay walls onto the two
+ * tank end domes (bare steel-to-steel, or through MLI when the vehicle
+ * carries it). Bay walls sit at the radiative-equilibrium temperature of
+ * the bare hull in the orbit-averaged environment.
+ */
+export function parasiticHeat(params = PARAMS, mli = params.receiverMli) {
+  const P = params;
+  const S = V.CONFIGS[P.config].ship;
+  const R = S.diameter / 2;
+  const tLiq = 0.5 * (FLUIDS.lox.tSat + FLUIDS.ch4.tSat);
+  const absN = P.steelEps * P.earthIR * P.viewEarthNadirHalf
+    + P.steelAlphaS * P.albedo * P.solar * P.viewEarthNadirHalf * P.albedoOrbitAvg;
+  const absZ = P.steelEps * P.earthIR * P.viewEarthZenithHalf
+    + P.steelAlphaS * P.albedo * P.solar * P.viewEarthZenithHalf * P.albedoOrbitAvg;
+  const tBay = ((absN + absZ) / 2 / (P.steelEps * SIGMA_SB)) ** 0.25;
+  const dT = tBay - tLiq;
+  const skirts = 2 * P.steelK * Math.PI * S.diameter * P.skirtThk * dT / P.skirtLen;
+  const mounts = S.engineCount * P.steelK * P.mountArea * dT / P.mountLen;
+  const domeA = 2 * P.domeAreaFactor * Math.PI * R * R;
+  const epsEff = 1 / (2 / P.steelEps - 1);
+  const qDome = mli ? mliFlux(tBay, tLiq, P) : epsEff * SIGMA_SB * (tBay ** 4 - tLiq ** 4);
+  const domes = domeA * qDome;
+  return { total: skirts + mounts + domes + P.plumbingW, skirts, mounts, domes, tBay };
+}
+
 function tileHeat(qAbs, P, tLiq) {
   // outer tile surface: qAbs = eps*sigma*T^4 + (k/t)(T - Tliq)
   const G = P.tileK / P.tileThk;
@@ -405,23 +478,27 @@ function tileHeat(qAbs, P, tLiq) {
  * Boil-off for a tank set at fill fraction `fill` (1 = full). Wall heat
  * reaches the liquid only through the wetted barrel (settled liquid; heat
  * into dry ullage walls superheats the vapour instead), so it scales with
- * fill; structural/plumbing conduction (parasitic) does not.
+ * fill; structural/plumbing/dome heat (parasiticHeat) does not.
  */
-export function boiloff(params = PARAMS, fill = 1) {
+export function boiloff(params = PARAMS, fill = 1, mli = params.receiverMli) {
   const P = params;
   const S = V.CONFIGS[P.config].ship;
   const R = S.diameter / 2;
   // tank barrel length from the propellant volumes
   const Lox = S.loxVolume / (Math.PI * R * R), Lch4 = S.ch4Volume / (Math.PI * R * R);
-  let Q = P.parasiticW, mdot = 0;
+  const Qpar = parasiticHeat(P, mli).total;
+  let Q = Qpar, mdot = 0;
   for (const [key, L] of [['lox', Lox], ['ch4', Lch4]]) {
     const f = FLUIDS[key];
     const side = 2 * Math.PI * R * L * fill;
     const steelA = side * (1 - P.tileFrac), tileA = side * P.tileFrac;
     // bare stainless half faces nadir: Earth IR + albedo (wall ~ at T_liq, re-emission negligible)
-    const qSteel = P.steelEps * P.earthIR * P.viewEarthNadirHalf
-      + P.steelAlphaS * P.albedo * P.solar * P.viewEarthNadirHalf * P.albedoOrbitAvg
-      - P.steelEps * SIGMA_SB * f.tSat ** 4;
+    const qSteel = mli
+      ? mliHeat(P.mliEps * P.earthIR * P.viewEarthNadirHalf
+        + P.mliAlphaS * P.albedo * P.solar * P.viewEarthNadirHalf * P.albedoOrbitAvg, P, f.tSat)
+      : P.steelEps * P.earthIR * P.viewEarthNadirHalf
+        + P.steelAlphaS * P.albedo * P.solar * P.viewEarthNadirHalf * P.albedoOrbitAvg
+        - P.steelEps * SIGMA_SB * f.tSat ** 4;
     const qTileAbs = P.tileEps * P.earthIR * P.viewEarthZenithHalf
       + P.tileAlphaS * P.albedo * P.solar * P.viewEarthZenithHalf * P.albedoOrbitAvg;
     const qTile = tileHeat(qTileAbs, P, f.tSat);
@@ -432,16 +509,16 @@ export function boiloff(params = PARAMS, fill = 1) {
   // parasitic heat split by mass fraction into the mixed latent heat
   const mr = V.PROPELLANT.mixtureRatio;
   const hMix = (mr * FLUIDS.lox.hfg + FLUIDS.ch4.hfg) / (1 + mr);
-  mdot += P.parasiticW / hMix;
+  mdot += Qpar / hMix;
   return { Q, mdot, tPerDay: mdot * 86400 / 1000, pctPerDay: 100 * mdot * 86400 / S.propMass };
 }
 
 /** Integrate boil-off of a tank set holding `mass` kg over `days`. */
-export function loiter(mass, days, params = PARAMS) {
+export function loiter(mass, days, params = PARAMS, mli = params.receiverMli) {
   const cap = V.CONFIGS[params.config].ship.propMass;
   const dt = 3600, n = Math.ceil(days * 86400 / dt), h = days * 86400 / n;
   let m = mass;
-  for (let i = 0; i < n && m > 0; i++) m -= boiloff(params, m / cap).mdot * h;
+  for (let i = 0; i < n && m > 0; i++) m -= boiloff(params, m / cap, mli).mdot * h;
   return Math.max(0, m);
 }
 
@@ -466,7 +543,7 @@ export function tankerDelivery(params = PARAMS) {
   const dvCirc = circularizeDv(asc.insertion, rT);
   const pCirc = rocketProp(m, dvCirc + P.rendezvousDv, vacIsp); m -= pCirc;
   const onboard = m - S.dryMass;
-  const pBoil = onboard - loiter(onboard, P.tankerLoiterDays, P);
+  const pBoil = onboard - loiter(onboard, P.tankerLoiterDays, P, P.tankerMli);
   const residual = P.residualFrac * S.propMass;
   // settling propellant during the transfer (tanker pays; vent-gas thrusters)
   const settle = settlingAccel(P);

@@ -12,9 +12,10 @@ const MU_E = 3.986004418e14, R_E = 6378137;
 
 export const DEFAULTS = Object.freeze({
   orbitAltKm: 200,
-  tankerDeliveryKg: 120e3,      // usable propellant per tanker flight (SpaceX quotes 100-150 t)
-  transferRateKgS: 100,          // settled-ullage pump transfer
-  boiloffPerDay: 0.0015,         // fraction of loaded propellant per day (sunshade, no cryocooler)
+  // refs/data/p-refill.real.json: 150 t per tanker, 5 t/min transfer, 0.1 %/day boil-off
+  tankerDeliveryKg: 150e3,       // usable propellant per tanker flight
+  transferRateKgS: 5000 / 60,    // settled-ullage transfer, 5 t/min
+  boiloffPerDay: 0.001,          // fraction of loaded propellant per day
   cadenceDays: 6,                // tanker launch spacing
   rcsAccel: 0.08,                // m/s^2 tanker RCS translation authority
   startRange: 600,               // m behind on V-bar
@@ -39,9 +40,14 @@ const pickNum = (obj, names, dflt) => {
 export function refillParams(R, over = {}) {
   const p = { ...DEFAULTS };
   if (R) {
-    p.tankerDeliveryKg = pickNum(R, ['TANKER_DELIVERY_KG', 'tankerDeliveryKg', 'TANKER_PAYLOAD_KG', 'tankerPayloadKg'], p.tankerDeliveryKg);
-    p.transferRateKgS = pickNum(R, ['TRANSFER_RATE_KG_S', 'transferRateKgS', 'TRANSFER_RATE'], p.transferRateKgS);
-    p.boiloffPerDay = pickNum(R, ['BOILOFF_PER_DAY', 'boiloffPerDay', 'BOILOFF_FRACTION_PER_DAY'], p.boiloffPerDay);
+    const t = (names) => { const v = pickNum(R, names, NaN); return Number.isFinite(v) ? v * 1000 : NaN; };
+    const or = (...v) => v.find(Number.isFinite);
+    p.tankerDeliveryKg = or(pickNum(R, ['TANKER_DELIVERY_KG', 'tankerDeliveryKg', 'TANKER_PAYLOAD_KG', 'tankerPayloadKg', 'propPerTankerKg', 'PROP_PER_TANKER_KG'], NaN),
+      t(['prop_per_tanker_t', 'PROP_PER_TANKER_T', 'propPerTankerT']), p.tankerDeliveryKg);
+    p.transferRateKgS = or(pickNum(R, ['TRANSFER_RATE_KG_S', 'transferRateKgS', 'transferRate_kg_s'], NaN),
+      t(['transfer_rate_t_per_min', 'transferRateTPerMin']) / 60, p.transferRateKgS);
+    p.boiloffPerDay = or(pickNum(R, ['BOILOFF_PER_DAY', 'boiloffPerDay', 'BOILOFF_FRACTION_PER_DAY'], NaN),
+      pickNum(R, ['boiloff_pct_per_day', 'boiloffPctPerDay'], NaN) / 100, p.boiloffPerDay);
     p.source = 'physics/refill.js';
   } else p.source = 'game defaults';
   return Object.assign(p, over);

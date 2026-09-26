@@ -40,7 +40,7 @@ export async function create({ THREE, renderer, params, hud }) {
   camera.rotation.order = 'YXZ';
 
   // ---- illumination: sol 211 at Jezero (Ls ~105), mid-afternoon ----
-  const sol = { ltst: 16.3, Ls: 105 };
+  const sol = { ltst: 15.7, Ls: 105 };
   const sun = marsSunDir(THREE, sol.ltst, sol.Ls);
   // Direct sun normalised to 1; sky diffuse irradiance on a horizontal surface relative
   // to the direct beam for tau ~0.5 (redder than the beam: forward scattering by dust).
@@ -57,7 +57,7 @@ export async function create({ THREE, renderer, params, hud }) {
   const dl = new THREE.DirectionalLight(0xffffff, 1.0); dl.position.copy(sun.dir).multiplyScalar(10); scene.add(dl); scene.add(dl.target);
   const hl = new THREE.HemisphereLight(new THREE.Color(skyI.x, skyI.y, skyI.z).multiplyScalar(1.6), new THREE.Color(0.06, 0.045, 0.03), 1.0); scene.add(hl);
 
-  const chain = new MastcamZChain(THREE, renderer, { expo: 8.0, vignette: 0.12, sigma: 0.62, jpegQuality: 90, seed: 211 });
+  const chain = new MastcamZChain(THREE, renderer, { expo: 7.2, vignette: 0.12, sigma: 0.62, jpegQuality: 90, seed: 211 });
 
   // ---- rover state ----
   const state = { x: 0, z: 0, heading: 0, mastAz: 0, mastEl: -0.47, focal: 34, view: 'mastcam' };

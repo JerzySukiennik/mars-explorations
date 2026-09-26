@@ -4,6 +4,7 @@
 // console errors.
 //
 // usage: node tools/smoke.mjs [scene ...] [--auto] [--seconds N]
+//   --size WxH viewport (default 960x600); --frames N frames to run after the input (12)
 //   --auto     also run each mission phase with ?auto=1 (autopilots on) and
 //              report how far it got (work/smoke/<scene>-auto.png)
 import { chromium } from 'playwright';
@@ -19,6 +20,8 @@ const PHASES = ['launch', 'refill', 'transfer', 'entry', 'landing', 'surface'];
 const scenes = argv.filter((a, i) => !a.startsWith('--') && argv[i - 1] !== '--seconds');
 const list = scenes.length ? scenes : ALL;
 const seconds = Number(opt('--seconds', 4));
+const [W, H] = opt('--size', '960x600').split('x').map(Number);
+const MIN_FRAMES = Number(opt('--frames', 12));   // heavy scenes under SwiftShader: wait for real frames, not wall time
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const outDir = path.join(root, 'work', 'smoke');
@@ -52,7 +55,8 @@ const SCRIPTS = {
 };
 
 async function run(scene, { auto = false, secs = seconds } = {}) {
-  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  const page = await browser.newPage({ viewport: { width: W, height: H } });
+  await page.addInitScript(() => { window.__frames = 0; const f = () => { window.__frames++; requestAnimationFrame(f); }; requestAnimationFrame(f); });
   const errors = [], notes = [];
   page.on('console', (m) => {
     if (m.type() !== 'error') return;
@@ -82,6 +86,10 @@ async function run(scene, { auto = false, secs = seconds } = {}) {
   } else {
     await page.waitForTimeout(secs * 1000);
   }
+  // make sure the game loop actually ran a number of frames after the input
+  const f0 = await page.evaluate(() => window.__frames);
+  try { await page.waitForFunction((n) => window.__frames >= n, f0 + MIN_FRAMES, { timeout: 180000, polling: 500 }); }
+  catch { notes.push(`only ${(await page.evaluate(() => window.__frames)) - f0} frames in 180 s`); }
   const state = await page.evaluate(() => { try { return { phase: window.__game?.phase, state: window.__game?.state?.(), result: window.__game?.result, deps: window.__game?.deps } ; } catch (e) { return { err: e.message }; } });
   const fps = await page.evaluate(() => new Promise((res) => { let n = 0; const t0 = performance.now(); const f = () => { n++; if (performance.now() - t0 < 1000) requestAnimationFrame(f); else res(n); }; requestAnimationFrame(f); }));
   const file = path.join(outDir, `${scene}${auto ? '-auto' : ''}.png`);

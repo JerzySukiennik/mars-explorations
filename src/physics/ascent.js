@@ -12,9 +12,10 @@
 //     including the nozzle back-pressure loss F = F_vac - p_a * A_e.
 //   * Guidance (guidance.js): vertical rise + pitch kick + gravity turn,
 //     max-Q throttle bucket and acceleration cap, booster MECO on its
-//     return-propellant reserve, hot staging, linear-tangent ship steering to
-//     the IFT-5 suborbital target orbit (SECO on perigee), boostback to the
-//     tower on a predicted impact point, hover-slam landing burn to a catch.
+//     return-propellant reserve, hot staging, closed-loop ship insertion
+//     guidance to the IFT-5 suborbital target orbit (SECO on perigee),
+//     boostback on a predicted impact point, landing burn and divert to a
+//     tower catch.
 //
 // Mission inputs are only vehicle/planet parameters, the launch site, the
 // target orbit (-15 x 213 km, i = 26.2 deg, published for Flight 5) and the
@@ -103,7 +104,7 @@ export const CD_SLENDER = [[0, 0.30], [0.6, 0.30], [0.85, 0.36], [1.05, 0.55], [
 // Blunt, tail-first descent (engine skirt leading, grid fins deployed):
 // subsonic bluff-body Cd ~1, rising to the modified-Newtonian stagnation
 // value (~1.6-1.7 for a flat-ish face) in hypersonic flow.
-export const CD_TAIL_FIRST = [[0, 1.5], [0.8, 1.6], [1.1, 2.0], [1.5, 2.3], [2.5, 2.5], [4, 2.5], [10, 2.4]];
+export const CD_TAIL_FIRST = [[0, 2.2], [0.8, 2.4], [1.2, 2.6], [2.0, 2.6], [3.0, 3.2], [4, 3.4], [10, 3.4]];
 export const REF_AREA = Math.PI * 4.5 ** 2; // 9 m diameter
 
 // ---------------------------------------------------------------------------
@@ -112,7 +113,7 @@ export const REF_AREA = Math.PI * 4.5 ** 2; // 9 m diameter
 export const FLIGHT_IFT5 = Object.freeze({
   name: 'Starship Flight 5 (B12 / S30)',
   site: STARBASE,
-  targetOrbit: { perigeeKm: -15, apogeeKm: 213, incDeg: 26.2, insertionAltKm: 150 },
+  targetOrbit: { perigeeKm: -15, apogeeKm: 213, incDeg: 26.2, insertionAltKm: 145 },
   booster: {
     dryMass: BOOSTER.dryMass,         // 275 t
     propMass: BOOSTER.propMass,       // 3400 t
@@ -130,23 +131,30 @@ export const FLIGHT_IFT5 = Object.freeze({
     release: 2.5,                     // s, clamp release
     hotStageDelay: 5.0,               // MECO -> ship ignition / separation (s)
     engineRamp: 2.0,                  // s, booster engine relight ramp
+    landingRamp: 3.0,                 // s, 13-engine landing-burn relight ramp
     shipRamp: 3.0,                    // s, ship engine start-up during hot staging
     flip: 10.0,                        // s, booster flip on the 3 centre engines
     ringJettison: 5.0,                // s after boostback cutoff
   },
   ascentGuidance: {
-    tVertical: 8, tKick: 10, kickDeg: null,    // kick found by shooting
-    stagingGammaDeg: 34,                       // Earth-relative flight-path angle at MECO
+    tVertical: 8, tKick: 10, kickDeg: 2.0,     // tower clearance, then a 2 deg pitch kick
+    qTurn: 5e3,                                // Pa: start upper-atmosphere steering below this q (after max-Q)
+    stagingGammaDeg: 29,                       // Earth-relative flight-path angle at MECO (pitch rate shot to it)
     throttle: { qLimit: 24e3, qBand: 0.15, accelLimit: 2.2 * 9.80665, slewUp: 0.002, slewDown: 0.08, min: 0.4, max: 0.92 },
   },
   shipGuidance: {
-    throttle: 0.85, accelLimit: 3.5 * 9.80665,
+    throttle: 0.82, accelLimit: 3.5 * 9.80665,
+    vernierDv: 550,                   // m/s to go when the SL engines shut down
+    vernierThrottle: 0.5,             // RVac throttle during the final trim
   },
   boosterReturn: {
     flipThrottle: 0.5,
+    boostbackPitchDeg: 3,             // nose-down boostback attitude (keeps the return apogee low)
+    throttleDownDistance: 40e3, throttleDownTau: 0.5, // 13 engines throttle back inside 40 km
     trimDistance: 12e3, trimThrottle: 0.5, // last 12 km of impact-point walk on 3 engines
-    ignitionFraction: 0.7,            // planned 13-engine throttle at landing-burn ignition (margin)
-    gateSpeed: 70, gateAlt: 600,       // 13 -> 3 engine switch gate (m/s, m)
+    ignitionThrottle: 0.8,            // planned 13-engine throttle at landing-burn ignition (margin)
+    gateSpeed: 60, gateAlt: 150,       // 13 -> 3 engine switch gate (m/s, m)
+    divertOffset: 700,                // m, offshore aim point east of the tower
     catchAlt: 100,                     // m (tower chopsticks)
   },
 });
@@ -226,13 +234,14 @@ function stackMass(F) {
   return F.booster.dryMass + F.booster.ringMass + F.booster.propMass + F.ship.dryMass + F.ship.propMass;
 }
 
-export function flyStack(F, kickDeg, dt, rec) {
+export function flyStack(F, pitchRateDeg, dt, rec) {
   const B = F.booster, TL = F.timeline;
   const site = geodeticToEcef(F.site.latDeg, F.site.lonDeg, F.site.h);
   const az = launchAzimuth(F.site.latDeg, F.targetOrbit.incDeg);
   const nAll = B.nOuter + B.nMiddle + B.nCenter;
   const thr = new G.ThrottleController(F.ascentGuidance.throttle);
-  const pg = { ...F.ascentGuidance, kickDeg, azimuthDeg: az };
+  const pg = { ...F.ascentGuidance, pitchRateDeg, azimuthDeg: az };
+  let tTurn = null, qPeak = 0;
   // Propellant burned on the pad between the end of the start sequence and
   // clamp release, at full thrust.
   let boosterProp = B.propMass - nAll * massFlow(B.engine, 1) * (TL.release - TL.ignition);
@@ -247,12 +256,11 @@ export function flyStack(F, kickDeg, dt, rec) {
     const d = describe(s);
     let groups, dir;
     if (tMeco === null) {
-      const pa = d.pa;
-      const perTau = nAll * (B.engine.thrustVac - 0) ; // N per unit throttle (vac); back pressure handled below
-      tau = thr.update(dt, { q: d.q, mass: s.m, thrustPerTau: nAll * (engineThrust(B.engine, pa, 1)) });
-      void perTau;
+      tau = thr.update(dt, { q: d.q, mass: s.m, thrustPerTau: nAll * engineThrust(B.engine, d.pa, 1) });
       groups = [{ engine: B.engine, n: nAll, tau, ramp: 1 }];
-      dir = G.boosterPitchProgram({ t: s.t - TL.release, r: s.r, vRel: relVelocity(s.r, s.v) }, pg);
+      qPeak = Math.max(qPeak, d.q);
+      if (tTurn === null && qPeak > 1e4 && d.q < F.ascentGuidance.qTurn) tTurn = s.t - TL.release;
+      dir = G.boosterPitchProgram({ t: s.t - TL.release, r: s.r, vRel: relVelocity(s.r, s.v), tTurn }, pg);
       if (boosterProp <= B.returnReserve * B.propMass) {
         tMeco = s.t;
         events.meco = { ...d, boosterProp, stackMass: s.m };
@@ -278,20 +286,21 @@ export function flyStack(F, kickDeg, dt, rec) {
   };
 }
 
-/** Find the pitch-kick angle that gives the design flight-path angle at MECO. */
-export function solveKick(F = FLIGHT_IFT5, dt = 0.05) {
+/** Find the upper-atmosphere pitch-over rate that gives the design flight-path angle at MECO. */
+export function solvePitchRate(F = FLIGHT_IFT5, dt = 0.05) {
   const target = F.ascentGuidance.stagingGammaDeg;
   const g = (k) => flyStack(F, k, dt).events.meco.gamma / DEG - target;
-  let lo = 0.2, hi = 8, glo = g(lo), ghi = g(hi);
-  for (let i = 0; i < 40 && hi - lo > 1e-4; i++) {
+  let lo = 0, hi = 1, glo = g(lo);
+  if (glo <= 0) return 0;
+  for (let i = 0; i < 40 && hi - lo > 1e-5; i++) {
     const mid = 0.5 * (lo + hi), gm = g(mid);
-    if (Math.sign(gm) === Math.sign(glo)) { lo = mid; glo = gm; } else { hi = mid; ghi = gm; }
+    if (gm > 0) { lo = mid; glo = gm; } else hi = mid;
   }
   return 0.5 * (lo + hi);
 }
 
 // ---------------------------------------------------------------------------
-// Phase 2a: ship burn to SECO (linear-tangent steering)
+// Phase 2a: ship burn to SECO (closed-loop insertion guidance)
 // ---------------------------------------------------------------------------
 export function flyShip(F, sep, steer, dt, tEnd, rec) {
   const S = F.ship, SG = F.shipGuidance, TL = F.timeline, O = F.targetOrbit;
@@ -299,30 +308,38 @@ export function flyShip(F, sep, steer, dt, tEnd, rec) {
   const tgt = G.insertionTarget(EARTH.mu, R, O.perigeeKm * 1000, O.apogeeKm * 1000, steer.insertionAltKm * 1000);
   let s = { t: sep.t, r: sep.r, v: sep.v, m: sep.m };
   let prop = sep.prop;
-  let seco = null, tau = SG.throttle, dir = null;
+  let seco = null, tau = SG.throttle, dir = null, vernier = null;
   while (s.t < tEnd - 1e-9) {
     const d = describe(s);
     let ctl = { cd: CD_SLENDER };
     if (!seco) {
       const aps = G.apsides(s.r, s.v, EARTH.mu, R);
       if (aps.perigee >= O.perigeeKm * 1000 || prop <= 0 || d.alt < 0) {
-        seco = { ...d, t: s.t, apogee: aps.apogee, perigee: aps.perigee, prop, mass: s.m };
+        seco = { ...d, t: s.t, apogee: aps.apogee, perigee: aps.perigee, prop, mass: s.m, vernierStart: vernier };
         if (!rec) return { seco, state: s };
       } else {
         const ramp = Math.min(1, (s.t - sep.t) / TL.shipRamp + 0.05);
-        const full = S.nSl * engineThrust(S.sl, d.pa, 1) + S.nVac * engineThrust(S.vac, d.pa, 1);
-        tau = Math.max(S.sl.throttleMin, Math.min(SG.throttle, (SG.accelLimit * s.m) / full));
-        ctl.groups = [
-          { engine: S.sl, n: S.nSl, tau, ramp },
-          { engine: S.vac, n: S.nVac, tau, ramp },
-        ];
-        const { F: Fnow, md } = propulsion(ctl.groups.map((g) => ({ ...g, ramp: 1 })), d.pa);
         // Velocity to gain: target horizontal speed and radial rate.
         const up = unit(s.r);
         const hdot = dot(s.v, up);
         const vh = norm(sub(s.v, scale(up, hdot)));
         const dv = Math.hypot(tgt.vh - vh, tgt.hdot - hdot);
-        const tgo = G.timeToGo(dv, Fnow / md, s.m, md, Fnow, SG.accelLimit);
+        if (!vernier && dv < SG.vernierDv) vernier = s.t;
+        if (vernier) {
+          // Final trim: sea-level engines off, RVacs throttled back for a
+          // precise cutoff.
+          tau = SG.vernierThrottle;
+          ctl.groups = [{ engine: S.vac, n: S.nVac, tau, ramp: 1 }];
+        } else {
+          const full = S.nSl * engineThrust(S.sl, d.pa, 1) + S.nVac * engineThrust(S.vac, d.pa, 1);
+          tau = Math.max(S.sl.throttleMin, Math.min(SG.throttle, (SG.accelLimit * s.m) / full));
+          ctl.groups = [
+            { engine: S.sl, n: S.nSl, tau, ramp },
+            { engine: S.vac, n: S.nVac, tau, ramp },
+          ];
+        }
+        const { F: Fnow, md } = propulsion(ctl.groups.map((g) => ({ ...g, ramp: 1 })), d.pa);
+        const tgo = vernier ? dv / (Fnow / s.m) : G.timeToGo(dv, Fnow / md, s.m, md, Fnow, SG.accelLimit);
         // Freeze the steering over the last seconds (t_go -> 0 singularity).
         if (!dir || tgo > 10) {
           dir = G.insertionSteering({ r: s.r, v: s.v, aThrust: (Fnow * ramp) / s.m, g: norm(gravity(s.r)) }, tgt, tgo);
@@ -386,7 +403,12 @@ function flyBooster(F, sep, dt, tEnd, rec) {
   const siteEcef = geodeticToEcef(F.site.latDeg, F.site.lonDeg, F.site.h);
   let s = { t: sep.t, r: sep.r, v: sep.v, m: sep.m };
   let prop = sep.prop;
-  let phase = 'flip', tPhase = s.t, miss0 = null, bbDir = null;
+  // Boostback aims offshore of the tower (east, over the Gulf); the booster
+  // only diverts onto the tower in the terminal phase of the landing burn.
+  const { east } = G.localFrame(siteEcef);
+  const aimEcef = add(siteEcef, scale(east, BR.divertOffset));
+  const catchEcef = geodeticToEcef(F.site.latDeg, F.site.lonDeg, F.site.h + BR.catchAlt);
+  let phase = 'flip', tPhase = s.t, miss0 = null, bbDir = null, tgo = 0;
   const ev = {};
   const n13 = B.nMiddle + B.nCenter;
   while (s.t < tEnd - 1e-9) {
@@ -395,10 +417,16 @@ function flyBooster(F, sep, dt, tEnd, rec) {
     let ctl = { cd: CD_TAIL_FIRST };
     const gLocal = norm(gravity(s.r));
     if (phase === 'flip' || phase === 'boostback') {
-      const miss = G.impactMiss(predictImpact(s), siteEcef);
-      const missI = rotZ(miss, EARTH.omega * s.t);
-      if (!miss0) miss0 = missI;
-      bbDir = G.boostbackDirection(s.r, missI);
+      const miss = G.impactMiss(predictImpact(s), aimEcef);
+      if (!miss0) miss0 = miss;
+      // Boostback attitude: thrust in the vertical plane of the miss, pointed
+      // back at the tower and pitched boostbackPitchDeg below the horizontal.
+      {
+        const up = unit(s.r);
+        const back = scale(unit(sub(rotZ(miss, EARTH.omega * s.t), scale(up, dot(rotZ(miss, EARTH.omega * s.t), up)))), -1);
+        const p = BR.boostbackPitchDeg * DEG;
+        bbDir = add(scale(back, Math.cos(p)), scale(up, -Math.sin(p)));
+      }
       if (phase === 'flip') {
         const f = Math.min(1, (s.t - tPhase) / TL.flip);
         ctl.dir = unit(add(scale(unit(vr), 1 - f), scale(bbDir, f)));
@@ -408,14 +436,18 @@ function flyBooster(F, sep, dt, tEnd, rec) {
         const ramp = Math.min(1, (s.t - tPhase) / TL.engineRamp);
         ctl.dir = bbDir;
         // Final trim of the impact point on the 3 centre engines only.
+        // Fine targeting: 13 engines throttle back as the impact point
+        // closes on the aim point, the last kilometres on 3 engines only.
+        if (!ev.boostbackThrottleDown && norm(miss) < BR.throttleDownDistance) ev.boostbackThrottleDown = { t: s.t, speed: d.speed };
         if (!ev.boostbackTrim && norm(miss) < BR.trimDistance) ev.boostbackTrim = { t: s.t, speed: d.speed };
+        const tau13 = ev.boostbackThrottleDown ? BR.throttleDownTau : 1;
         ctl.groups = ev.boostbackTrim
           ? [{ engine: B.engine, n: B.nCenter, tau: BR.trimThrottle, ramp: 1 }]
           : [
-            { engine: B.engine, n: B.nCenter, tau: 1, ramp: 1 },
-            { engine: B.engine, n: B.nMiddle, tau: 1, ramp },
+            { engine: B.engine, n: B.nCenter, tau: tau13, ramp: 1 },
+            { engine: B.engine, n: B.nMiddle, tau: tau13, ramp },
           ];
-        if (dot(miss, rotZ(miss0, -EARTH.omega * s.t)) <= 0 || prop <= 0) {
+        if (dot(miss, miss0) <= 0 || prop <= 0) {
           phase = 'coast'; tPhase = s.t; ev.boostbackEnd = { t: s.t, prop, mass: s.m };
           ctl.groups = null;
         }
@@ -425,26 +457,43 @@ function flyBooster(F, sep, dt, tEnd, rec) {
       if (d.gamma < 0 && d.alt < 15e3) {
         // Latest ignition that still reaches the gate: fast-time prediction
         // of a burn at the planned throttle, with drag.
-        const gate = predictLandingBurn(s, { engine: B.engine, n: n13, tau: BR.ignitionFraction }, BR.gateSpeed, TL.engineRamp);
+        const gate = predictLandingBurn(s, { engine: B.engine, n: n13, tau: BR.ignitionThrottle }, BR.gateSpeed, TL.landingRamp);
         if (gate.alt <= BR.gateAlt) { phase = 'landing13'; tPhase = s.t; ev.landingBurn = { t: s.t, alt: d.alt, speed: d.speed, prop }; }
       }
     }
-    if (phase === 'landing13' || phase === 'landing3') {
-      const is13 = phase === 'landing13';
-      const n = is13 ? n13 : B.nCenter;
-      const need = (is13
-        ? G.decelDemand(d.speed, d.alt, d.gamma, BR.gateSpeed, BR.gateAlt, gLocal)
-        : G.decelDemand(d.speed, d.alt, Math.min(d.gamma, -0.2), 0, BR.catchAlt, gLocal)) - dragDecel(s, d);
-      // thrust(tau) = n * (Fvac * tau - pa * Ae)  ->  solve for tau
+    if (phase === 'landing13') {
+      // 13 engines, retrograde, throttled to reach the gate speed at the
+      // gate altitude (constant-deceleration demand net of drag).
       const e = B.engine;
-      let tau = (need * s.m / n + d.pa * e.exitArea) / e.thrustVac;
+      const need = G.decelDemand(d.speed, d.alt, d.gamma, BR.gateSpeed, BR.gateAlt, gLocal) - dragDecel(s, d);
+      // thrust(tau) = n * (Fvac * tau - pa * Ae)  ->  solve for tau
+      let tau = (need * s.m / n13 + d.pa * e.exitArea) / e.thrustVac;
       tau = Math.max(e.throttleMin, Math.min(1, isFinite(tau) ? tau : 1));
-      const ramp = is13 ? Math.min(1, (s.t - tPhase) / TL.engineRamp + 0.2) : 1;
-      ctl.groups = [{ engine: e, n, tau, ramp }];
+      const ramp = Math.min(1, (s.t - tPhase) / TL.landingRamp + 0.2);
+      ctl.groups = [{ engine: e, n: n13, tau, ramp }];
       ctl.dir = scale(unit(vr), -1);
-      if (is13 && (d.speed <= BR.gateSpeed || d.alt <= BR.gateAlt)) { phase = 'landing3'; ev.gate = { t: s.t, alt: d.alt, speed: d.speed }; }
-      if (!is13 && (d.speed < 0.3 || d.alt <= BR.catchAlt || prop <= 0)) {
-        phase = 'caught'; ev.catch = { t: s.t, alt: d.alt, speed: d.speed, prop, mass: s.m }; ctl.groups = null;
+      if (d.speed <= BR.gateSpeed) {
+        phase = 'landing3'; tPhase = s.t;
+        const dr = sub(rotZ(catchEcef, EARTH.omega * s.t), s.r);
+        tgo = Math.max(5, (2 * norm(dr)) / d.speed);
+        ev.gate = { t: s.t, alt: d.alt, speed: d.speed, divert: norm(dr), tgo };
+      }
+    } else if (phase === 'landing3') {
+      // Terminal divert to the tower on the 3 centre engines: linear-in-time
+      // acceleration that arrives at the catch point with zero Earth-relative
+      // velocity at t_go (explicit two-point guidance).
+      const e = B.engine;
+      const T = Math.max(1, tgo - (s.t - tPhase));
+      const dr = sub(rotZ(catchEcef, EARTH.omega * s.t), s.r);
+      const a0 = add(scale(sub(dr, scale(vr, T)), 6 / (T * T)), scale(vr, 2 / T));
+      const aDrag = scale(unit(vr), -dragDecel(s, d));
+      const aT = sub(sub(a0, gravity(s.r)), aDrag);
+      let tau = (norm(aT) * s.m / B.nCenter + d.pa * e.exitArea) / e.thrustVac;
+      tau = Math.max(e.throttleMin, Math.min(1, tau));
+      ctl.groups = [{ engine: e, n: B.nCenter, tau, ramp: 1 }];
+      ctl.dir = unit(aT);
+      if ((d.speed < 0.5 && norm(dr) < 20) || s.t - tPhase >= tgo || prop <= 0) {
+        phase = 'caught'; ev.catch = { t: s.t, alt: d.alt, speed: d.speed, miss: norm(dr), prop, mass: s.m }; ctl.groups = null;
       }
     }
     if (phase === 'caught') {
@@ -469,13 +518,13 @@ function flyBooster(F, sep, dt, tEnd, rec) {
 /**
  * Simulate the whole flight. Returns 1 s telemetry rows (unquantised) and
  * the key events.
- * @param {object} opts { flight, dt, tEnd, kickDeg, shipSteer }
+ * @param {object} opts { flight, dt, tEnd, pitchRateDeg, shipSteer }
  */
 export function simulateAscent(opts = {}) {
   const F = opts.flight ?? FLIGHT_IFT5;
-  const dt = opts.dt ?? 0.02;
+  const dt = opts.dt ?? 0.05;
   const tEnd = opts.tEnd ?? 512;
-  const kickDeg = opts.kickDeg ?? F.ascentGuidance.kickDeg ?? solveKick(F);
+  const pitchRateDeg = opts.pitchRateDeg ?? solvePitchRate(F, dt);
   const samples = new Map();
   const sampler = (key) => (s, d, extra) => {
     const k = Math.round(s.t);
@@ -491,7 +540,7 @@ export function simulateAscent(opts = {}) {
   };
   // Before release the stack sits on the pad (HUD reads 0).
   for (let k = 0; k < F.timeline.release; k++) samples.set(k, { t: k, stack_speed: 0, stack_alt: 0, stack_phase: 'pad' });
-  const stack = flyStack(F, kickDeg, dt, sampler('stack'));
+  const stack = flyStack(F, pitchRateDeg, dt, sampler('stack'));
   const shipSteer = opts.shipSteer ?? { insertionAltKm: F.targetOrbit.insertionAltKm };
   const ship = flyShip(F, stack.ship, shipSteer, dt, tEnd + dt, sampler('ship'));
   const booster = flyBooster(F, stack.booster, dt, tEnd + dt, sampler('booster'));
@@ -509,7 +558,7 @@ export function simulateAscent(opts = {}) {
     });
   }
   return {
-    rows, kickDeg, shipSteer,
+    rows, pitchRateDeg, shipSteer,
     events: {
       meco: stack.events.meco, tMeco: stack.tMeco, tSep: stack.tSep,
       seco: ship.seco, ...booster.events,

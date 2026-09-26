@@ -31,15 +31,17 @@
 
 export const STARSHIP_GEOM = Object.freeze({
   diameter: 9.0,          // m
-  bodyLength: 47.0,       // m of cylinder + ogive seen in crossflow (50.3 m stack minus nose tip)
+  bodyLength: 50.3,       // m, overall length
+  noseLength: 18.0,       // m, ogive nosecone (planform ~2/3 of a D x L rectangle)
   flapArea: 70.0,         // m^2, 2 forward + 2 aft flaps (approx. 2x12 + 2x23 m^2)
   noseRadius: 4.5,        // m, windward effective radius used for stagnation heating
   wettedArea: 1450,       // m^2, for skin friction
 });
 
-/** Reference area (m^2): belly planform of the cylinder, D * L. */
+/** Reference area (m^2): belly planform, cylinder barrel + tangent-ogive nose (2/3 D Ln). */
 export function refArea(geom = STARSHIP_GEOM) {
-  return geom.diameter * geom.bodyLength;
+  const Ln = geom.noseLength ?? 0;
+  return geom.diameter * (geom.bodyLength - Ln + (2 / 3) * Ln);
 }
 
 /** Stagnation-point pressure coefficient Cp0 at freestream Mach M, ratio of specific heats g. */
@@ -113,7 +115,7 @@ export function crossflowEta(fineness, Mc) {
  */
 export function coefficients(alpha, M, Re1 = 1e6, { geom = STARSHIP_GEOM, g = 1.4, flap = 0 } = {}) {
   const D = geom.diameter, L = geom.bodyLength;
-  const Aref = refArea(geom);
+  const Aref = refArea(geom);            // planform area Ap; all coefficients are referenced to it
   const sa = Math.sin(alpha), ca = Math.cos(alpha);
   const Mc = M * Math.abs(sa);
   const ReD = Re1 * D * Math.abs(sa);
