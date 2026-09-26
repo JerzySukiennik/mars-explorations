@@ -17,9 +17,11 @@ const B = await opt('../src/physics/mars_body.js');
 const T = await opt('../src/physics/transfer.js');
 const RV = await opt('../src/physics/rover.js');
 const PR = await opt('../src/physics/printer.js');
+const AS = await opt('../src/physics/ascent.js');
+const RF = await opt('../src/physics/refill.js');
 
 function flyAscent(opts) {
-  const s = Asc.createAscent({ V, ...opts });
+  const s = Asc.createAscent({ V, AS, ...opts });
   Asc.stepAscent(s, 0, { start: true });
   for (let i = 0; i < 12000 && s.phase !== 'failed' && s.phase !== 'orbit'; i++) Asc.stepAscent(s, 0.1, { autoStage: true });
   return s;
@@ -72,6 +74,17 @@ test('refill: autopilot docks tankers, transfer fills, boil-off drains', () => {
   assert.ok(s.shipProp < before && s.lostBoiloff > 0);
   Ref.stepRefill(s, 1, { finish: true });
   assert.equal(Ref.refillResult(s).success, true);
+});
+
+test('refill: uses src/physics/refill.js transfer rate, delivery and boil-off when present', { skip: !RF && 'refill.js absent' }, () => {
+  const s = Ref.createRefill({ R: RF, shipPropKg: 60e3 });
+  assert.equal(s.p.source, 'physics/refill.js');
+  assert.ok(s.p.transferRateKgS > 20 && s.p.transferRateKgS < 1000, `rate ${s.p.transferRateKgS}`);
+  assert.ok(s.p.tankerDeliveryKg > 50e3 && s.p.tankerDeliveryKg < 250e3);
+  const full = s.p.boilKgPerDay(1), low = s.p.boilKgPerDay(0.05);
+  assert.ok(full > low && full > 0 && full < 20e3, `boil ${full} kg/day`);
+  for (let i = 0; i < 400000 && s.tankers.length < 1 && s.mode !== 'failed'; i++) Ref.stepRefill(s, 0.5, { auto: true, skip: true });
+  assert.equal(s.tankers.length, 1, s.failReason);
 });
 
 test('refill: ramming the port fails the tanker', () => {

@@ -17,17 +17,21 @@
 // (src/physics/earth_atmosphere.js) and the derived Mars model
 // (src/physics/mars_atmosphere.js).
 //
-// Guidance (Earth / Mars entry): "no-skip" altitude-rate guidance. Once the
-// ship feels the atmosphere (drag > 0.05 g) the bank angle sets the vertical
-// lift so that the altitude rate is damped to zero:
+// Guidance. altitudeRateGuidance: "no-skip" altitude-rate law. Once the
+// ship feels the atmosphere the bank sets the vertical lift so the altitude
+// rate is damped to zero:
 //   L cos(bank)/m = g - v_t^2/r + D sin(g)/m - k hdot,  k = 2 zeta omega,
-// with omega^2 = (L/m)/H the natural frequency of the altitude oscillation of
-// a lifting vehicle in an exponential atmosphere (scale height H) and
-// zeta = 0.7. The pull-out therefore ends in a constant-altitude plateau
-// (bank ~40-50 deg) that lasts until the required lift exceeds what the ship
-// has; from then on it flies lift-up, descending along the equilibrium glide.
-// Angle of attack follows a Mach schedule: ~62 deg hypersonic, pitching up to
-// the ~88 deg belly-flop between Mach 5 and Mach 1.
+// with omega^2 = (L/m)/H (lifting-vehicle altitude oscillation in an
+// exponential atmosphere of scale height H), zeta = 0.7.
+// starshipEntryGuidance (used for the IFT reentry): banked pre-entry, then a
+// constant-bank pull-out. The ship's own lightly damped phugoid dips it below
+// the equilibrium glide (drag / g pulse), rebounds into a lift-supported
+// plateau (drag relief as speed and density fall together) and, at the rebound
+// apex, hands over to an equilibrium glide at constant bank with sink-rate
+// damping and roll-rate limited bank reversals on a heading deadband.
+// Angle of attack follows a Mach schedule: 54 deg hypersonic (L/D ~0.68),
+// pitching up to the ~88 deg belly-flop between Mach 5 and Mach 1; flaps
+// follow flapSchedule.
 // Aerocapture (Mars): numerical predictor-corrector (Apollo / MSL / FNPEG
 // family) solving each cycle for the constant bank whose predicted exit orbit
 // has the target apoapsis. Aerobraking: a lift-neutral pass through the upper
@@ -82,9 +86,15 @@ export const PLANETS = Object.freeze({ earth: EARTH, mars: MARS });
 
 /** Starship Block 1 (Ship 30) in entry configuration. */
 export const STARSHIP_ENTRY = Object.freeze({
-  mass: 150e3,              // kg: ~120 t dry (Block 1 ship + TPS) + ~30 t landing propellant in the header tanks
+  // ~120-130 t Block 1 ship + TPS, plus header-tank landing propellant and main-tank residuals.
+  // Cross-checked by the subsonic belly-flop terminal speed (rough-cylinder crossflow, aero.js).
+  mass: 175e3,
   geom: STARSHIP_GEOM,
-  alphaHyp: 62 * DEG,       // hypersonic trim angle of attack (belly-first; Starship flies ~60-70 deg). L/D ~0.5 here.
+  // Hypersonic trim angle of attack (belly-first). 54 deg gives the crossflow-model
+  // L/D ~0.68; a lifting ship that holds a constant-altitude plateau at Mach ~21
+  // (v^2/r ~ 7.2 m/s^2 vs g 9.6) with the observed ~0.35 g of drag needs vertical
+  // L/D >= 0.7, which a 60-70 deg attitude (L/D 0.35-0.5) cannot provide.
+  alphaHyp: 54 * DEG,
   alphaSub: 88 * DEG,       // subsonic belly-flop attitude
   noseRadius: STARSHIP_GEOM.noseRadius,
   flapHyp: 0,               // hypersonic flap deflection (rad, - = folded toward the lee side)
@@ -222,7 +232,7 @@ export function simulateEntry(opts = {}) {
       decel: Math.hypot(a.drag, a.lift) , drag: a.drag, LD: a.LD, heat, st, planet, veh, w, t0, heatLoad };
     cmd = guidance(ctx) ?? cmd;
     samples.push({ t, h: d.h, v: d.v, gamma: d.gamma, range, M: a.M, q: a.q, decel: a.drag,
-      aeroAccel: Math.hypot(a.drag, a.lift), heat, bank: cmd.bank, alpha: cmd.alpha, LD: a.LD });
+      aeroAccel: Math.hypot(a.drag, a.lift), heat, bank: cmd.bank, bankSigned: cmd.bankSigned ?? cmd.bank, phase: cmd.phase, alpha: cmd.alpha, LD: a.LD });
     if (t >= tMax || d.h < (opts.hMin ?? 0) || (opts.stop && opts.stop(ctx))) break;
     st = rk4(planet, veh, st, dt, cmd.bank, cmd.alpha, w);
     heatLoad += heat * dt;
@@ -245,44 +255,99 @@ export function scaleHeight(planet, h) {
 export function altitudeRateGuidance(opts = {}) {
   const zeta = opts.zeta ?? 0.7;
   const act = opts.activation ?? 0.05 * 9.80665;
-  const aMod = opts.alphaMin != null;              // angle-of-attack modulation enabled
-  const aMax = opts.alphaMax ?? null, aMin = opts.alphaMin ?? null;
-  const pitchRate = (opts.pitchRateDeg ?? 1) * DEG;  // rad/s, body-flap limited
-  let aHyp = null, tLast = null;
   return (c) => {
-    const hi = aMax ?? c.veh.alphaHyp;
-    if (aHyp == null) aHyp = hi;
-    const dt = tLast == null ? 0 : c.t - tLast; tLast = c.t;
-    const sched = (ah) => alphaSchedule(c.M, { ...c.veh, alphaHyp: ah });
-    if (c.drag < act) return { bank: 0, alpha: sched(aHyp) };
+    const alpha = alphaSchedule(c.M, c.veh);
+    if (c.drag < act) return { bank: 0, alpha };
     const r = c.planet.R + c.h;
     const vt = c.v * Math.cos(c.gamma) + c.w * r;          // inertial horizontal speed
     const g = c.planet.mu / (r * r);
     const hdot = c.v * Math.sin(c.gamma);
+    const lift = Math.max(c.drag * c.LD, 1e-4);
+    const k = 2 * zeta * Math.sqrt(lift / scaleHeight(c.planet, c.h));
     const href = opts.hdotRef ? opts.hdotRef(c) : 0;
-    const liftAt = (a) => {
-      const s = aeroState(c.planet, c.veh, c.h, c.v, sched(a));
-      return { lift: Math.max(s.lift, 1e-4), drag: s.drag };
-    };
-    const needAt = (ls) => {
-      const k = 2 * zeta * Math.sqrt(ls.lift / scaleHeight(c.planet, c.h));
-      return (g - vt * vt / r + ls.drag * Math.sin(c.gamma) - k * (hdot - href)) / Math.cos(c.gamma);
-    };
-    let target = hi;
-    if (aMod) {
-      // Lift saturated at the current attitude: pitch down (less drag, more L/D)
-      // before giving up altitude; pitch back up while bank margin remains.
-      const cur = liftAt(aHyp);
-      const ratio = needAt(cur) / cur.lift;
-      if (ratio > 1) target = aMin;
-      else if (ratio < (opts.pitchUpMargin ?? 0.9)) target = hi;
-      else target = aHyp;
+    const need = (g - vt * vt / r + c.drag * Math.sin(c.gamma) - k * (hdot - href)) / Math.cos(c.gamma);
+    const cb = Math.max(opts.cosMin ?? -1, Math.min(1, need / lift));
+    return { bank: Math.acos(cb), alpha };
+  };
+}
+
+/**
+ * Equilibrium-glide sink rate (m/s) for a vehicle holding a constant vertical
+ * lift fraction in an exponential atmosphere of scale height H:
+ *   L cos(bank) = g - v^2/r  (v inertial)  with rho ~ exp(-h/H)
+ *   => hdot_eq = -H * (2 v D / (vc^2 - v^2) + 2 D / v),  vc^2 = g r.
+ */
+export function equilibriumSinkRate(g, r, v, D, H) {
+  const vc2 = g * r;
+  const den = Math.max(vc2 - v * v, 0.02 * vc2);
+  return -H * (2 * v * D / den + 2 * D / Math.max(v, 1));
+}
+
+/**
+ * Starship-style entry guidance (three phases, lateral logic included):
+ *  1. Pre-entry: fly the initial bank until drag builds to `activation`.
+ *  2. Pull-out / constant-altitude: altitude-rate law (no-skip), hdot -> 0.
+ *     The pull-out ends in an altitude plateau whose bank shallows as speed
+ *     (and centrifugal relief) bleeds off. When the plateau needs all the lift
+ *     the ship has (lift-up), guidance hands over to
+ *  3. Equilibrium glide at a constant commanded bank (vertical lift fraction
+ *     cos(bankGlide), the rest used for crossrange), with sink-rate damping
+ *     about the equilibrium-glide sink rate.
+ * Bank changes are roll-rate limited. The sign of the bank is set by a lateral
+ * heading-error deadband: the heading drifts by L sin(bank)/v; when it exceeds
+ * the deadband the ship rolls through wings-level to the opposite bank (bank
+ * reversal), which briefly puts all the lift vertical.
+ * Angle of attack follows alphaSchedule (Mach).
+ */
+export function starshipEntryGuidance(opts = {}) {
+  const zeta = opts.zeta ?? 0.7;
+  const act = opts.activation ?? 0.05 * 9.80665;
+  const preBank = (opts.preBankDeg ?? 0) * DEG;
+  const cbGlide = Math.cos((opts.bankGlideDeg ?? 0) * DEG);
+  const rollRate = (opts.rollRateDeg ?? 5) * DEG;
+  const psiDb = (opts.headingDeadbandDeg ?? 2) * DEG;
+  let phase = 1, bank = preBank, sign = 1, psi = 0, tLast = null, satT = 0, reversing = false, rose = false;
+  return (c) => {
+    const dt = tLast == null ? 0 : c.t - tLast; tLast = c.t;
+    const alpha = alphaSchedule(c.M, c.veh);
+    const r = c.planet.R + c.h;
+    const vt = c.v * Math.cos(c.gamma) + c.w * r;          // inertial horizontal speed
+    const g = c.planet.mu / (r * r);
+    const hdot = c.v * Math.sin(c.gamma);
+    const lift = Math.max(c.drag * c.LD, 1e-4);
+    const H = scaleHeight(c.planet, c.h);
+    const k = 2 * zeta * Math.sqrt(lift / H);
+    const deficit = g - vt * vt / r + c.drag * Math.sin(c.gamma);
+    let target;
+    if (phase === 1 && c.drag >= act) phase = 2;
+    if (phase === 1) target = preBank;
+    else if (phase === 2 && opts.pulloutBankDeg != null) {
+      // constant-bank pull-out: the natural (lightly damped) phugoid dips the
+      // ship below its equilibrium glide and rebounds; hand over at the rebound apex
+      target = opts.pulloutBankDeg * DEG;
+      if (hdot > 0) rose = true;
+      if (rose && hdot < 0) phase = 3;
+    } else if (phase === 2) {
+      const cb = (deficit - k * hdot) / Math.cos(c.gamma) / lift;
+      satT = cb >= 1 && Math.abs(hdot) < (opts.plateauSinkRate ?? 20) ? satT + dt : 0;
+      if (satT > (opts.saturationTime ?? 5)) phase = 3;
+      target = Math.acos(Math.max(-1, Math.min(1, cb)));
     }
-    const step = pitchRate * dt;
-    aHyp += Math.max(-step, Math.min(step, target - aHyp));
-    const ls = liftAt(aHyp);
-    const cb = Math.max(opts.cosMin ?? -1, Math.min(1, needAt(ls) / ls.lift));
-    return { bank: Math.acos(cb), alpha: sched(aHyp) };
+    if (phase === 3) {
+      const href = equilibriumSinkRate(g, r, vt, c.drag, H);
+      const cb = c.M < (opts.glideMachMin ?? 2) ? 1 : cbGlide - k * (hdot - href) / lift;
+      target = Math.acos(Math.max(0, Math.min(1, cb)));
+    }
+    // lateral: heading error drift and bank reversals
+    psi += sign * Math.sin(bank) * lift / Math.max(c.v, 1) * dt;
+    if (!reversing && phase > 1 && Math.abs(psi) > psiDb && Math.sign(psi) === sign && c.M > (opts.reversalMachMin ?? 3)) { reversing = true; }
+    if (reversing) {
+      bank = Math.max(0, bank - rollRate * dt);
+      if (bank === 0) { sign = -sign; reversing = false; }
+    } else {
+      bank += Math.max(-rollRate * dt, Math.min(rollRate * dt, target - bank));
+    }
+    return { bank, alpha, bankSigned: sign * bank, phase, psi };
   };
 }
 
@@ -322,7 +387,7 @@ export function atmosphericPass({ planet = MARS, vehicle, inclinationDeg = 0, in
 
 /**
  * Aerocapture predictor-corrector: returns guidance(ctx) that every `cycle`
- * seconds re-solves (secant on cos(bank)) for the constant bank whose
+ * seconds re-solves (bisection on cos(bank)) for the constant bank whose
  * predicted exit apoapsis equals targetApoapsis (m).
  */
 export function aerocaptureGuidance({ targetApoapsis, cycle = 10, inclinationDeg = 0 } = {}) {
@@ -337,13 +402,18 @@ export function aerocaptureGuidance({ targetApoapsis, cycle = 10, inclinationDeg
     const alpha = alphaSchedule(c.M, c.veh);
     if (c.t >= tNext && c.h < 200e3) {
       tNext = c.t + cycle;
-      let x0 = Math.max(-1, cb - 0.2), x1 = Math.min(1, cb + 0.2);
-      let f0 = predict(c, x0) - targetApoapsis, f1 = predict(c, x1) - targetApoapsis;
-      for (let i = 0; i < 8 && Math.abs(f1) > 5e3 && f1 !== f0; i++) {
-        const x2 = Math.max(-1, Math.min(1, x1 - f1 * (x1 - x0) / (f1 - f0)));
-        x0 = x1; f0 = f1; x1 = x2; f1 = predict(c, x1) - targetApoapsis;
+      // Bisection on cos(bank): the exit apoapsis rises monotonically with
+      // vertical lift (a crash counts as the lowest value, hyperbolic exit as +inf).
+      let lo = -1, hi = 1;
+      if (predict(c, hi) < targetApoapsis) cb = 1;          // even lift-up cannot reach it
+      else if (predict(c, lo) > targetApoapsis) cb = -1;    // even lift-down overshoots
+      else {
+        for (let i = 0; i < 14 && hi - lo > 2e-3; i++) {
+          const m = 0.5 * (lo + hi);
+          if (predict(c, m) > targetApoapsis) hi = m; else lo = m;
+        }
+        cb = 0.5 * (lo + hi);
       }
-      cb = x1;
     }
     return { bank: Math.acos(Math.max(-1, Math.min(1, cb))), alpha };
   };

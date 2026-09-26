@@ -83,3 +83,27 @@ test('Mars aerobraking pass removes a little velocity and exits', () => {
   assert.ok(p.exit);
   assert.ok(p.dv > 0 && p.dv < 1500, `dv ${p.dv}`);
 });
+
+test('guided Earth entry: pull-out drag pulse, lift-supported relief, then steepening', () => {
+  // Physics shape, not reference values: after the pull-out the drag peaks,
+  // falls while altitude stays within ~3 km (lift-supported plateau), then rises again.
+  const s = samples.filter((x) => x.t >= 2900 && x.t <= 3400);
+  const iPk = s.findIndex((x, i) => i > 0 && i < s.length - 1 && x.decel >= s[i - 1].decel && x.decel > s[i + 1].decel);
+  assert.ok(iPk > 0, 'no pull-out drag peak');
+  const pk = s[iPk];
+  const rest = s.slice(iPk);
+  const low = rest.reduce((a, b) => (b.decel < a.decel ? b : a));
+  assert.ok(low.decel < 0.85 * pk.decel, `relief ${low.decel / pk.decel}`);
+  assert.ok(Math.abs(low.h - pk.h) < 3e3, `plateau ${pk.h} -> ${low.h}`);
+  assert.ok(samples.filter((x) => x.t > low.t && x.t < 3700).some((x) => x.decel > 2 * low.decel), 'no steepening after the plateau');
+});
+
+test('guided Earth entry flies bank reversals', () => {
+  let rev = 0, last = 0;
+  for (const x of samples) {
+    const sg = Math.abs(x.bankSigned) > 1e-6 ? Math.sign(x.bankSigned) : 0;
+    if (sg && last && sg !== last) rev++;
+    if (sg) last = sg;
+  }
+  assert.ok(rev >= 1 && rev <= 8, `${rev} reversals`);
+});

@@ -6,7 +6,7 @@
 // usage: node tools/smoke.mjs [scene ...] [--auto] [--seconds N]
 //   --size WxH viewport (default 960x600); --frames N frames to run after the input (12)
 //   --auto     also run each mission phase with ?auto=1 (autopilots on) and
-//              report how far it got (work/smoke/<scene>-auto.png)
+//              report how far it got (work/smoke/<scene>-auto.png); --auto-seconds N (12)
 import { chromium } from 'playwright';
 import http from 'node:http';
 import fs from 'node:fs';
@@ -17,7 +17,8 @@ const flag = (n) => argv.includes(n);
 const opt = (n, d) => { const i = argv.indexOf(n); return i >= 0 ? argv[i + 1] : d; };
 const ALL = ['menu', 'launch', 'refill', 'transfer', 'entry', 'landing', 'surface', 'orbit', 'onboard'];
 const PHASES = ['launch', 'refill', 'transfer', 'entry', 'landing', 'surface'];
-const scenes = argv.filter((a, i) => !a.startsWith('--') && argv[i - 1] !== '--seconds');
+const VALUE_OPTS = ['--seconds', '--size', '--frames', '--auto-seconds'];
+const scenes = argv.filter((a, i) => !a.startsWith('--') && !VALUE_OPTS.includes(argv[i - 1]));
 const list = scenes.length ? scenes : ALL;
 const seconds = Number(opt('--seconds', 4));
 const [W, H] = opt('--size', '960x600').split('x').map(Number);

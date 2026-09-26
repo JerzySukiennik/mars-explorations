@@ -9,8 +9,9 @@
 //   * boosterPitchProgram  - vertical rise, pitch kick in the launch azimuth,
 //                            then zero-angle-of-attack gravity turn (thrust
 //                            along the Earth-relative velocity).
-//   * ThrottleController   - max-Q throttle bucket (dynamic-pressure limit)
-//                            plus a sensed-acceleration cap, both with a
+//   * ThrottleController   - max-Q throttle bucket (dynamic-pressure limit,
+//                            flown as a q-rate envelope: dq/dt is held to a
+//                            first-order approach to the limit) plus a sensed-acceleration cap, both with a
 //                            finite throttle slew rate (engine throttle
 //                            response), clamped to the engine throttle range.
 //   * linearTangentPitch   - bilinear/linear-tangent steering for the ship:
@@ -93,7 +94,10 @@ export function boosterPitchProgram(s, p) {
 export class ThrottleController {
   /**
    * @param {object} p { qLimit (Pa), accelLimit (m/s^2, sensed), slewUp,
-   *                     slewDown (1/s), min, max, qBand }
+   *                     slewDown (1/s), min, max, qBand, accelHold (m/s^2,
+   *                     sensed, held until max-Q has passed), qGain (1/s: set to
+   *                     use the q-rate envelope follower instead of the
+   *                     proportional q band) }
    */
   constructor(p) {
     this.p = { qBand: 0.25, slewUp: 0.02, slewDown: 0.1, min: 0.4, max: 1, ...p };
@@ -103,12 +107,31 @@ export class ThrottleController {
   /**
    * @param {number} dt       step (s)
    * @param {object} s        { q (Pa), thrustPerTau (N of thrust per unit
-   *                            throttle, at current back pressure), mass }
+   *                            throttle, at current back pressure), mass;
+   *                            for the q-envelope mode also rho, drhodh,
+   *                            speed, hdot (Earth-relative), gAlong
+   *                            (g sin gamma, m/s^2) and drag (N) }
    */
   update(dt, s) {
     const p = this.p;
     let cmd = p.max;
-    if (p.qLimit && s.q > 0) {
+    if (p.qLimit && p.qGain && s.rho > 0 && s.speed > 1) {
+      // Dynamic-pressure envelope follower. Differentiating q = rho v^2 / 2
+      // along the trajectory,
+      //   dq/dt = rho v dv/dt + (v^2 / 2) (drho/dh) (dh/dt),
+      // and the guidance asks q to close on the limit no faster than a
+      // first-order lag: dq/dt <= qGain (qLimit - q). That fixes the largest
+      // allowed along-track acceleration dv/dt; the throttle that produces
+      // it is thrust = m (dv/dt + g sin(gamma)) + drag (thrust along the
+      // velocity in the zero-alpha gravity turn). Far below the limit the
+      // allowed rate is large and the engines stay at full throttle; as q
+      // builds, the throttle rolls off smoothly, bottoms out near max-Q and
+      // recovers on its own once the thinning air takes over.
+      const qdotMax = p.qGain * (p.qLimit - s.q);
+      const aMax = (qdotMax - 0.5 * s.speed * s.speed * s.drhodh * s.hdot) / (s.rho * s.speed);
+      const Fneed = s.mass * (aMax + s.gAlong) + s.drag;
+      if (s.thrustPerTau > 0) cmd = Math.min(cmd, Fneed / s.thrustPerTau);
+    } else if (p.qLimit && s.q > 0) {
       // Proportional q hold: the command falls linearly from full throttle
       // at q = qLimit * (1 - qBand) to minimum throttle at q = qLimit.
       const x = (s.q / p.qLimit - (1 - p.qBand)) / p.qBand;
@@ -116,6 +139,15 @@ export class ThrottleController {
     }
     if (p.accelLimit && s.thrustPerTau > 0) {
       cmd = Math.min(cmd, (p.accelLimit * s.mass) / s.thrustPerTau);
+    }
+    // Low-altitude load hold: while climbing into max-Q the stack carries
+    // aerodynamic bending on top of axial thrust load, so the sensed
+    // acceleration is held to a lower limit until the dynamic-pressure peak
+    // has clearly passed (q back below 90 % of the peak seen).
+    this.qPeak = Math.max(this.qPeak ?? 0, s.q ?? 0);
+    if (!this.pastMaxQ && p.qLimit && this.qPeak > 0.5 * p.qLimit && s.q < 0.9 * this.qPeak) this.pastMaxQ = true;
+    if (p.accelHold && !this.pastMaxQ && s.thrustPerTau > 0) {
+      cmd = Math.min(cmd, (p.accelHold * s.mass) / s.thrustPerTau);
     }
     cmd = Math.max(p.min, Math.min(p.max, cmd));
     const d = cmd - this.tau;

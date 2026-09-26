@@ -558,3 +558,330 @@ export function sampleSol(sim, cadence_h = 0.25, tEnd_h = 24.5) {
   }
   return rows;
 }
+
+// =====================================================================
+// Curiosity (MSL) power system and a multi-sol timeline with a ground SOC
+// estimator.
+// =====================================================================
+// This section models the MMRTG-powered Curiosity rover. Curiosity is the
+// same power architecture as Perseverance: MMRTG, a 28 V bus, and two Li-ion
+// strings. Measured SOC telemetry for Curiosity is published, and this model
+// is compared against it. Nothing here reads that telemetry.
+//
+// Parameters come from vehicle design values and from the load
+// characterisation in Larsen et al., IEEE Aero 2023, "Preparing for a
+// Productive Low Power Future on the Curiosity Mars Rover".
+// - Sleep bus load is 31-35 W (RAD low-power band / standard band), plus an
+//   unexplained 4 W base load.
+// - REMS draws 6.5 W while measuring and 0.4 W on standby.
+// - The ChemCam mast-unit survival heater is thermostatted at -32.4 / -31.4 C
+//   (after the dead-band anomaly). Its maximum was modelled as 5x the old
+//   8 W average, so 40 W.
+// - The SDST is on whenever the flight computer is awake, except in UHF
+//   passes, when flight software powers it off.
+// - The battery is two strings of 8 cells in series, 42 Ah nameplate each.
+//   Capacity retention is 85 % at sol 3000 and 0 C.
+// - The flight/ground battery resistance model is higher than the true
+//   resistance.
+// The ground SOC estimator is modelled as the paper describes it. It works
+// from low-cadence voltage/current/temperature telemetry through an
+// OCV + resistance model. It is therefore biased high when the discharge
+// current steps up and low when charging starts, because the true battery's
+// polarisation builds up only over tens of minutes. The spikes in the
+// estimate therefore come out of the battery dynamics; they are not added in.
+
+export const MSL = Object.freeze({
+  massKg: 899,
+  wheelRadius_m: 0.25,
+  topSpeed_m_s: 0.04,
+  crr: 0.10,                       // firm sand/bedrock (MSL drives avoid loose sand)
+  driveEfficiency: 0.35,           // brushed DC motors + gearheads at warm afternoon temps
+  steerAvg_W: 10,
+  brakeRelease_W: 20,
+  motorController_W: 40,           // RMC motor drivers + resolvers while mobile
+  vce_W: 0,                        // MSL runs VO/AutoNav on the RCE (counted in awake)
+  driveCameras_W: 8,               // Hazcams/Navcams
+  stepLength_m: 1.0,
+  stopPerStep_s: 20,               // MSL visual odometry: no thinking-while-driving
+  // MMRTG flight unit F1: fuelled mid-2011 (launch Nov 2011, landing Aug 2012).
+  mmrtgFuelToLanding_yr: 1.15,
+});
+
+/** Gale crater near the Sands of Forvie, late southern summer (Ls ~332). */
+export const SITE_GALE = Object.freeze({
+  latDeg: -4.59,
+  Ls: 332,
+  albedo: 0.20,
+  emissivity: 0.95,
+  thermalInertia: 300,
+  tau: 0.6,
+  airCoupling: 0.62,
+});
+
+export const MSL_BATTERY = Object.freeze({
+  strings: 2,
+  cellsSeries: 8,
+  nameplateAh: 42,                 // per string
+  capacityRetention: 0.85,         // ground capacity model at sol 3000, 0 C
+  cellR0_ohm: 0.006,               // ohmic, per cell, ~5 C
+  cellR1_ohm: 0.008,               // charge-transfer/diffusion polarisation, per cell
+  tau1_s: 1200,                    // polarisation time constant
+  coulombic: 0.995,                // charge acceptance
+  cellVmax: 4.10,                  // charge voltage limit (bus clamp / shunt regulator)
+});
+
+/** Inverse of cellOCV (bisection). */
+export function cellSOCfromOCV(v) {
+  let lo = 0, hi = 1;
+  for (let k = 0; k < 40; k++) { const m = (lo + hi) / 2; if (cellOCV(m) < v) lo = m; else hi = m; }
+  return (lo + hi) / 2;
+}
+
+/** Two-string Li-ion pack with ohmic + one RC polarisation branch.
+ * step(Pbus, dt): Pbus is net power offered to (+) / demanded from (-) the
+ * battery at its terminals. Charge current is limited so the terminal
+ * voltage never exceeds cellsSeries * cellVmax: close to full the OCV rises
+ * towards that clamp, so charge current, and with it the charge rate, tapers.
+ * Power that cannot go into the battery is shunted. */
+export function createPack({ soc = 0.9, b = MSL_BATTERY } = {}) {
+  const C = b.strings * b.nameplateAh * b.capacityRetention; // Ah
+  const R0 = b.cellR0_ohm * b.cellsSeries / b.strings;
+  const R1 = b.cellR1_ohm * b.cellsSeries / b.strings;
+  const Vmax = b.cellVmax * b.cellsSeries;
+  let q = soc * C;            // Ah stored
+  let v1 = 0;                 // polarisation voltage (V, + when charging)
+  let I = 0, V = cellOCV(soc) * b.cellsSeries, Ahint = 0;
+  const ocv = () => cellOCV(q / C) * b.cellsSeries;
+  return {
+    capacityAh: C, R0, R1,
+    get soc() { return q / C; },
+    get current() { return I; },
+    get voltage() { return V; },
+    get ahIntegrator() { return Ahint; },
+    step(Pbus, dt) {
+      const E = ocv() + v1;
+      // Solve P = I (E + I R0) for I.
+      const disc = E * E + 4 * R0 * Pbus;
+      I = (-E + Math.sqrt(Math.max(0, disc))) / (2 * R0);
+      let shunt = 0;
+      if (I > 0) {
+        const Imax = Math.max(0, (Vmax - E) / R0);
+        if (I > Imax) { shunt = Pbus - Imax * (E + Imax * R0); I = Imax; }
+      }
+      q += (I > 0 ? I * b.coulombic : I) * dt / 3600;
+      q = Math.min(C, Math.max(0, q));
+      Ahint += I * dt / 3600;
+      // RC branch: dv1/dt = (I R1 - v1)/tau  (exact update)
+      const a = Math.exp(-dt / b.tau1_s);
+      v1 = I * R1 + (v1 - I * R1) * a;
+      V = ocv() + v1 + I * R0;
+      return shunt;
+    },
+  };
+}
+
+export const MSL_LOADS = Object.freeze({
+  sleepCore_W: 31,                 // standard sleep band (31-35 W incl. RAD)
+  baseLoadFactor_W: 4,             // unexplained constant load, present at all times
+  remsActive_W: 6.5,
+  remsStandby_W: 0.4,
+  remsSessionMin: 5,               // routine REMS: 5 min at the top of every hour
+  // Awake: RCE (RAD750 flight computer, memory, 1553 bus), the SDST receiver,
+  // and power-distribution/converter losses.
+  rce_W: 40,
+  sdst_W: 12,
+  awakeDistribution_W: 11,
+  hgaSlewPrep_W: 20,               // HGA gimbals during window preparation
+  sspaTx_W: 95,                    // X-band SSPA while transmitting (active phase only)
+  uhfTx_W: 55,                     // Electra-Lite UHF transmit (SDST powered off)
+  chemcamLibs_W: 55,               // ChemCam laser + spectrometers (LIBS rasters)
+  imaging_W: 20,                   // Mastcam / MARDI / Navcam imaging
+  danActive_W: 13,                 // DAN pulsed neutron generator
+  // ChemCam mast unit (CCMU) survival heater, mechanical thermostat.
+  ccmuHeater_W: 40,
+  ccmuClose_K: 273.15 - 32.4,
+  ccmuOpen_K: 273.15 - 31.4,
+  ccmuHeatCapacity_J_K: 6000,
+  ccmuLoss_W_per_K: 0.20,          // to the air and sky through its MLI
+  ccmuSolarAbs_m2: 0.012,          // absorptance x projected area
+  ccmuSkyDepression_K: 12,         // radiative sink below air temperature at night
+});
+
+/** Bus load (W) of one MSL activity state, excluding heater and REMS
+ * cycling (those are integrated separately). */
+export function mslStateLoad(state, L = MSL_LOADS, drive = null, r = MSL) {
+  const sleep = L.sleepCore_W + L.baseLoadFactor_W;
+  const awake = sleep + L.rce_W + L.sdst_W + L.awakeDistribution_W;
+  switch (state) {
+    case 'sleep': return sleep;
+    case 'awake': return awake;
+    case 'hga_prep': return awake + L.hgaSlewPrep_W;
+    case 'hga_tx': return awake + L.sspaTx_W + 0.1 * L.hgaSlewPrep_W;
+    case 'hga_rx': return awake + 0.1 * L.hgaSlewPrep_W;
+    case 'uhf': return awake - L.sdst_W + L.uhfTx_W;
+    case 'chemcam': return awake + L.chemcamLibs_W;
+    case 'imaging': return awake + L.imaging_W;
+    case 'remote': return awake + L.imaging_W + 0.25 * L.chemcamLibs_W; // mostly imaging, a few LIBS points
+    case 'dan': return awake + L.danActive_W + L.imaging_W * 0.5;
+    case 'drive': {
+      let p = awake + r.motorController_W + r.driveCameras_W;
+      if (drive && drive.moving) p += motorPower(drive.slopeDeg, r) + r.brakeRelease_W;
+      return p;
+    }
+    default: throw new Error(`unknown MSL state ${state}`);
+  }
+}
+
+/** A Curiosity multi-sol plan as the uplinked sequence would run it. Each
+ * block is a command window in Earth hours since the start of the discharge
+ * (wake-up for the morning HGA pass at ~10:00 LMST). Blocks not listed are
+ * sleep. The per-block power is not given here: it comes from which units
+ * the block powers (mslStateLoad).
+ *
+ * The windows stand for a holiday-plan style sequence: an HGA uplink,
+ * remote sensing, a drive with post-drive DAN, then a long awake period
+ * that runs REMS/RAD monitoring and change-detection imaging, UHF relays,
+ * and the next sol's HGA pass and science. */
+export const MSL_PLAN_2985 = Object.freeze([
+  { start: 0.00, end: 1.00, state: 'awake' },        // wake, sequence load, REMS/RAD
+  { start: 1.00, end: 2.00, state: 'remote' },       // ChemCam / Mastcam targets
+  { start: 2.40, end: 3.60, state: 'drive', slope: 2 },
+  { start: 3.60, end: 3.80, state: 'imaging' },      // post-drive imaging
+  { start: 3.80, end: 4.10, state: 'dan' },          // DAN active after the drive
+  { start: 4.10, end: 7.60, state: 'awake' },        // monitoring (REMS/RAD, MARDI)
+  { start: 7.60, end: 7.90, state: 'chemcam' },      // AEGIS rasters
+  { start: 7.90, end: 12.10, state: 'awake' },
+  { start: 12.10, end: 12.40, state: 'imaging' },    // Mastcam/MARDI change detection
+  { start: 12.40, end: 19.50, state: 'awake' },
+  { start: 19.50, end: 19.90, state: 'uhf' },        // orbiter relay pass
+  { start: 19.90, end: 21.00, state: 'awake' },
+  { start: 22.60, end: 22.72, state: 'hga_prep' },   // next sol: HGA uplink window
+  { start: 22.72, end: 23.00, state: 'hga_tx' },
+  { start: 23.00, end: 23.08, state: 'hga_rx' },
+  { start: 23.08, end: 24.60, state: 'remote' },
+  { start: 25.80, end: 26.10, state: 'uhf' },
+  { start: 26.10, end: 28.40, state: 'awake' },
+]);
+
+/**
+ * Integrate the MSL power system through a plan.
+ * opts: { plan, socStart (%), t0LocalH (LMST hour at t = 0), ageYr (MMRTG age
+ *         since fuelling), tEnd_h, dt (s), site, telemetry: {meanCadence_s,
+ *         iSkew_s, gain, rModelFactor, seed} }
+ * Returns per-step arrays and the telemetry-based ground SOC estimate.
+ */
+export function simulateMSL(opts = {}) {
+  const plan = opts.plan ?? MSL_PLAN_2985;
+  const dt = opts.dt ?? 10;
+  const tEnd = opts.tEnd_h ?? 30.2;
+  const site = opts.site ?? SITE_GALE;
+  const L = opts.loads ?? MSL_LOADS;
+  const climate = opts.climate ?? makeClimate(site);
+  const t0Local = (opts.t0LocalH ?? 10.0) / 24 * SOL_H;     // Earth h after local midnight
+  const sol = opts.sol ?? 2985;
+  const ageYr = opts.ageYr ?? (MSL.mmrtgFuelToLanding_yr + sol / SOLS_PER_EARTH_YEAR);
+  const gen = createMMRTG({ sol: ageYr * SOLS_PER_EARTH_YEAR, climate });
+  for (let t = -SOL_S; t < 0; t += 60) gen.step(60, t0Local + t / 3600 + SOL_H);
+  const pack = createPack({ soc: (opts.socStart ?? 95.5) / 100 });
+
+  // CCMU node spun up over the previous sol with the thermostat.
+  const ccmuSink = (c) => {
+    const sky = L.ccmuSkyDepression_K * (1 - Math.min(1, (c.insol ?? 0) / 100));
+    return c.Tair - sky + L.ccmuSolarAbs_m2 * (c.insol ?? 0) / L.ccmuLoss_W_per_K;
+  };
+  let Tcc = ccmuSink(climate(t0Local)) + 10, heater = false;
+  const ccmuStep = (c, h, extra) => {
+    if (Tcc < L.ccmuClose_K) heater = true; else if (Tcc > L.ccmuOpen_K) heater = false;
+    const q = (heater ? L.ccmuHeater_W : 0) + extra - L.ccmuLoss_W_per_K * (Tcc - ccmuSink(c));
+    Tcc += q * h / L.ccmuHeatCapacity_J_K;
+    return heater ? L.ccmuHeater_W : 0;
+  };
+  for (let t = -SOL_S; t < 0; t += dt) ccmuStep(climate(t0Local + t / 3600 + SOL_H), dt, 0);
+
+  // Drive kinematics (AutoNav/VO steps with slip on the local grade).
+  let x = 0, stepLeft = MSL.stepLength_m, stopLeft = 0;
+
+  const out = { t_h: [], soc: [], load: [], mmrtg: [], state: [], heater: [], I: [], V: [], Tccmu: [], x_m: [] };
+  const n = Math.round(tEnd * 3600 / dt);
+  for (let i = 0; i <= n; i++) {
+    const t = i * dt / 3600;
+    const tl = t0Local + t;
+    const c = climate(tl);
+    const blk = plan.find((b) => t >= b.start && t < b.end);
+    const state = blk ? blk.state : 'sleep';
+    let load;
+    if (state === 'drive') {
+      const slope0 = blk.slope ?? 0;
+      let left = dt, moving = 0;
+      while (left > 0) {
+        if (stopLeft > 0) { const u = Math.min(stopLeft, left); stopLeft -= u; left -= u; continue; }
+        const v = groundSpeed(slope0, MSL);
+        const u = Math.min(left, stepLeft / v);
+        x += v * u; stepLeft -= v * u; left -= u; moving += u;
+        if (stepLeft <= 1e-9) { stepLeft = MSL.stepLength_m; stopLeft = MSL.stopPerStep_s; }
+      }
+      const f = moving / dt;
+      load = f * mslStateLoad('drive', L, { moving: true, slopeDeg: slope0 })
+        + (1 - f) * mslStateLoad('drive', L, { moving: false, slopeDeg: slope0 });
+    } else load = mslStateLoad(state, L);
+    // REMS: 5-minute sessions at the top of each local (LMST) hour.
+    const lmstMin = ((tl / SOL_H * 24) % 1) * 60;
+    load += lmstMin < L.remsSessionMin ? L.remsActive_W : L.remsStandby_W;
+    // ChemCam LIBS warms the mast unit; the survival heater follows its PRT.
+    const libs = state === 'chemcam' ? 25 : state === 'remote' ? 12 : 0;
+    const h = ccmuStep(c, dt, libs);
+    load += h;
+    const P = gen.power;
+    out.t_h.push(t); out.soc.push(pack.soc * 100); out.load.push(load); out.mmrtg.push(P);
+    out.state.push(state); out.heater.push(h); out.I.push(pack.current); out.V.push(pack.voltage);
+    out.Tccmu.push(Tcc); out.x_m.push(x);
+    pack.step(P - load, dt);
+    gen.step(dt, tl + dt / 3600);
+  }
+  out.dt = dt;
+  out.pack = pack;
+  out.estimate = groundSocEstimate(out, opts.telemetry);
+  return out;
+}
+
+/** Tiny deterministic PRNG (telemetry timing jitter only). */
+function lcg(seed) {
+  let s = seed >>> 0;
+  return () => ((s = (1664525 * s + 1013904223) >>> 0) / 4294967296);
+}
+
+/** Ground SOC estimate from telemetry. Samples of bus voltage and battery
+ * current arrive at an irregular low cadence, and the current sample is
+ * taken slightly before the voltage sample. The estimate propagates the
+ * current integrator and pulls toward the SOC implied by
+ * OCV = V - I * R_model, where R_model is the ground resistance table
+ * (higher than the true ohmic resistance: it is the full steady-state
+ * resistance, times a margin factor). */
+export function groundSocEstimate(sim, tm = {}, b = MSL_BATTERY) {
+  const cad = tm.meanCadence_s ?? 90;
+  const skew = tm.iSkew_s ?? 30;
+  const gain = tm.gain ?? 0.35;
+  const rFac = tm.rModelFactor ?? 1.3;
+  const rnd = lcg(tm.seed ?? 2985);
+  const C = b.strings * b.nameplateAh * b.capacityRetention;
+  const Rm = rFac * (b.cellR0_ohm + b.cellR1_ohm) * b.cellsSeries / b.strings;
+  const at = (arr, t) => arr[Math.max(0, Math.min(arr.length - 1, Math.round(t * 3600 / sim.dt)))];
+  const tEnd = sim.t_h[sim.t_h.length - 1];
+  // Current integrator: cumulative Ah on the sim grid.
+  const Ah = [0];
+  for (let i = 1; i < sim.I.length; i++) Ah.push(Ah[i - 1] + sim.I[i - 1] * sim.dt / 3600);
+  const rows = [];
+  let t = 0, est = null, ahPrev = 0;
+  while (t <= tEnd) {
+    const V = at(sim.V, t), I = at(sim.I, Math.max(0, t - skew / 3600));
+    const socV = cellSOCfromOCV((V - I * Rm) / b.cellsSeries) * 100;
+    const ah = at(Ah, t);
+    if (est == null) est = at(sim.soc, t);
+    else est += (ah - ahPrev) / C * 100;
+    est += gain * (socV - est);
+    ahPrev = ah;
+    rows.push({ t_h: t, soc: est });
+    t += cad * (0.5 + rnd()) / 3600;
+  }
+  return rows;
+}

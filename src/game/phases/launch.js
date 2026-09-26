@@ -8,7 +8,7 @@ export async function create(game) {
   const { ctx, THREE, deps, input, layer, inputs, auto } = game;
   // An ascent module in src/physics (if one appears) may provide its own
   // vehicle constants; the sim itself uses src/physics/vehicle.js.
-  const s = Asc.createAscent({ V: deps.V, payload: inputs.payload ?? 100e3 });
+  const s = Asc.createAscent({ V: deps.V, AS: deps.AS, payload: inputs.payload ?? 100e3 });
   const wc = createWebcast(layer, { title: 'STARSHIP MARS MISSION' });
 
   const fd = panel('FLIGHT DIRECTOR', 'g-left');

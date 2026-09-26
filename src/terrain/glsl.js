@@ -62,12 +62,12 @@ float sandH(vec2 p){
   // impact ripples (wavelength ~5-8 cm, few mm high), sinuous crests, patchy
   vec2 wd = normalize(vec2(0.35, 1.0));
   float warp = 0.30 * fbm(p * 0.6, 3, 22u) + 0.012 * fbm(p * 5.0, 2, 23u);
-  const float lam = 0.08;
+  const float lam = 0.045;
   float ph = (dot(p, wd) + warp) / lam;
   float s = fract(ph);
   float prof = s < 0.72 ? s / 0.72 : (1.0 - s) / 0.28;
   prof = prof * prof * (3.0 - 2.0 * prof); prof = mix(prof, 0.5 - 0.5 * cos(6.2831853 * s), 0.5);
-  float amp = 0.0030 * smoothstep(-0.25, 0.35, fbm(p * 0.45, 2, 24u) + 0.1 * fbm(p * 3.0, 2, 27u));
+  float amp = 0.0018 * smoothstep(-0.25, 0.35, fbm(p * 0.45, 2, 24u) + 0.1 * fbm(p * 3.0, 2, 27u));
   h += amp * prof;
   // broad wind-drift undulations
   h += 0.02 * fbm(vec2(dot(p, wd), dot(p, wd.yx * vec2(-1, 1))) * vec2(1.4, 0.5), 2, 25u);
@@ -95,7 +95,7 @@ vec4 voronoi(vec2 x, uint s, out ivec2 id){
 }
 
 // fractured bedrock slabs; returns height relative to the local base, tint in 'tint'
-float slabH(vec2 p, out float tint){
+float slabCore(vec2 p, out float tint){
   const float FREQ = 2.1;
   const float ANG = 0.45;
   mat2 R = mat2(cos(ANG), sin(ANG), -sin(ANG), cos(ANG));
@@ -123,6 +123,10 @@ float slabH(vec2 p, out float tint){
   tint = r1;
   return top;
 }
+
+// geometric similarity: the bedrock at this site is broken into ~10-40 cm slabs
+const float SLAB_SCALE = 2.0;
+float slabH(vec2 p, out float tint){ return slabCore(p * SLAB_SCALE, tint) / SLAB_SCALE; }
 
 // loose angular rocks drawn from Golombek SFD; layer params L = (cell, dmin, dmax, occ)
 float rockLayer(vec2 p, vec4 L, uint s, inout float tint, inout float kind){
@@ -175,7 +179,7 @@ vec4 terrainH(vec2 p){
   float rock = max(sl, s + loose - 0.002);
   float useLoose = step(sl, s + loose - 0.002);
   float h = smax(s, rock, 0.005);
-  float mask = smoothstep(-0.001, 0.0015, rock - s);
+  float mask = smoothstep(0.0, 0.001, rock - s);
   float t = mix(tint, trk, useLoose);
   return vec4(b + h, mask, t, useLoose);
 }

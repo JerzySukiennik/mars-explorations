@@ -266,16 +266,25 @@ export function simulateAscent({ payloadT = 0, params = PARAMS, dt = 0.05 } = {}
 const rocketProp = (m0, dv, isp) => m0 * (1 - Math.exp(-dv / (isp * G0)));
 const reverseProp = (mf, dv, isp) => mf * (Math.exp(dv / (isp * G0)) - 1);
 
-/** Circularisation dv at apoapsis of the insertion orbit, then into target circle. */
-function circularizeDv(ins, rT) {
+/**
+ * Cheapest two-impulse move from the insertion ellipse (rp, ra) onto the
+ * target circle rT. If rT lies between rp and ra: at apoapsis raise the
+ * periapsis to rT, then at the new periapsis (= rT) burn retrograde to
+ * circularise. Otherwise circularise at the nearer apse and Hohmann to rT.
+ */
+export function circularizeDv(ins, rT) {
   const mu = EARTH.mu;
-  const vApo = Math.sqrt(mu * (2 / ins.ra - 1 / ins.a));
-  let dv = Math.abs(Math.sqrt(mu / ins.ra) - vApo);
-  // Hohmann correction from ra to target radius if different
-  if (Math.abs(ins.ra - rT) > 1) {
-    const at = (ins.ra + rT) / 2;
-    dv += Math.abs(Math.sqrt(mu * (2 / ins.ra - 1 / at)) - Math.sqrt(mu / ins.ra));
-    dv += Math.abs(Math.sqrt(mu / rT) - Math.sqrt(mu * (2 / rT - 1 / at)));
+  const vis = (r, a) => Math.sqrt(mu * (2 / r - 1 / a));
+  const { rp, ra } = ins;
+  if (rp <= rT && rT <= ra) {
+    const aT = (rT + ra) / 2;
+    return Math.abs(vis(ra, aT) - vis(ra, ins.a)) + Math.abs(vis(rT, aT) - Math.sqrt(mu / rT));
+  }
+  const rA = rT > ra ? ra : rp;                       // apse to circularise at
+  let dv = Math.abs(Math.sqrt(mu / rA) - vis(rA, ins.a));
+  if (Math.abs(rA - rT) > 1) {
+    const at = (rA + rT) / 2;
+    dv += Math.abs(vis(rA, at) - Math.sqrt(mu / rA)) + Math.abs(Math.sqrt(mu / rT) - vis(rT, at));
   }
   return dv;
 }

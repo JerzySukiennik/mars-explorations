@@ -1,0 +1,38 @@
+{
+  "battery_soc_pct": {
+    "value_or_null": null,
+    "tol_abs_or_rel": {"abs": 5.0},
+    "source_url": "https://dataverse.jpl.nasa.gov/api/access/datafile/82105",
+    "note": "Pointwise band on the whole trace (SOC percentage points). The trace is JPL's ground estimate of SOC from telemetered battery voltage, current and temperature. The paper says this estimate 'bounces around wildly, as much as ten percent' during high-current transients, and the spikes at ~7.7, 12.2, 23 and 26 h are that effect. Digitisation error is about +/-0.3 pts (6.67 px per %). A 5-pt band is tight enough to reject a wrong energy balance and loose enough to allow estimator noise. Skip or relax the band within +/-0.3 h of the spikes."
+  },
+  "soc_start_pct": {
+    "value_or_null": 95.5,
+    "tol_abs_or_rel": {"abs": 2.0},
+    "source_url": "https://dataverse.jpl.nasa.gov/api/access/datafile/82105",
+    "note": "SOC at discharge start (t=0-0.3 h) is 95-96%. The battery is near full after overnight MMRTG charging."
+  },
+  "soc_min_pct": {
+    "value_or_null": 55.5,
+    "tol_abs_or_rel": {"abs": 3.0},
+    "source_url": "https://dataverse.jpl.nasa.gov/api/access/datafile/82105",
+    "note": "Minimum SOC is about 55-56% at t = 28.4-28.5 h. It is well above the MSL guideline minimum (40% per Gaines et al.; the paper's model floor is 45%)."
+  },
+  "soc_min_time_h": {
+    "value_or_null": 28.45,
+    "tol_abs_or_rel": {"abs": 1.0},
+    "source_url": "https://dataverse.jpl.nasa.gov/api/access/datafile/82105",
+    "note": "Time of the minimum, in hours since the discharge start."
+  },
+  "mean_discharge_rate_pct_per_h_4_to_20h": {
+    "value_or_null": -1.49,
+    "tol_abs_or_rel": {"rel": 0.2},
+    "source_url": "https://dataverse.jpl.nasa.gov/api/access/datafile/82105",
+    "note": "Linear fit to the digitised trace for 4-20 h, a sustained net discharge. It is an ops-plan-specific slope, hence the loose 20% tolerance."
+  },
+  "recharge_rate_pct_per_h": {
+    "value_or_null": 2.0,
+    "tol_abs_or_rel": {"rel": 0.35},
+    "source_url": "https://dataverse.jpl.nasa.gov/api/access/datafile/82105",
+    "note": "Net recharge rates while the rover sleeps on MMRTG power: +1.75 %/h at 21.1-22.6 h and +2.34 %/h at 28.5-30 h. The mean is used. The loose tolerance reflects the spread between the two windows."
+  }
+}

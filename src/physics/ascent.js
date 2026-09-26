@@ -101,9 +101,13 @@ function interp(tab, x) {
 // friction + base drag, transonic wave-drag rise peaking just past Mach 1,
 // supersonic decay (typical launch-vehicle axial-force curves).
 export const CD_SLENDER = [[0, 0.30], [0.6, 0.30], [0.85, 0.36], [1.05, 0.55], [1.2, 0.52], [1.5, 0.45], [2, 0.38], [3, 0.30], [5, 0.26], [10, 0.25]];
-// Blunt, tail-first descent (engine skirt leading, grid fins deployed):
-// subsonic bluff-body Cd ~1, rising to the modified-Newtonian stagnation
-// value (~1.6-1.7 for a flat-ish face) in hypersonic flow.
+// Booster descent, tail-first with grid fins deployed and flying at an angle
+// of attack to glide toward the tower: EFFECTIVE axial drag coefficient on
+// the 9 m reference area. Shape follows a blunt body (bluff subsonic value,
+// rising toward the Newtonian plateau hypersonically); the magnitude
+// (2.2-3.4, well above a bare base's ~1.2-1.8) is calibrated so that a
+// ~480 t booster decelerates like a real Super Heavy re-entry; it lumps the
+// four grid fins and cross-flow drag at angle of attack into one number.
 export const CD_TAIL_FIRST = [[0, 2.2], [0.8, 2.4], [1.2, 2.6], [2.0, 2.6], [3.0, 3.2], [4, 3.4], [10, 3.4]];
 export const REF_AREA = Math.PI * 4.5 ** 2; // 9 m diameter
 
@@ -113,6 +117,8 @@ export const REF_AREA = Math.PI * 4.5 ** 2; // 9 m diameter
 export const FLIGHT_IFT5 = Object.freeze({
   name: 'Starship Flight 5 (B12 / S30)',
   site: STARBASE,
+  // Published Flight 5 orbit: -15 x 213 km, i = 26.2 deg. The insertion altitude is
+  // not published; propellant at SECO is flat (+/-1 t) for 110-160 km.
   targetOrbit: { perigeeKm: -15, apogeeKm: 213, incDeg: 26.2, insertionAltKm: 145 },
   booster: {
     dryMass: BOOSTER.dryMass,         // 275 t
@@ -142,9 +148,14 @@ export const FLIGHT_IFT5 = Object.freeze({
     stagingGammaDeg: 31,                       // Earth-relative flight-path angle at MECO (pitch rate shot to it)
     throttle: { qLimit: 24e3, qBand: 0.15, accelLimit: 2.2 * 9.80665, slewUp: 0.002, slewDown: 0.08, min: 0.4, max: 0.92 },
   },
+  // Guidance design constants. Engine throttle settings and trigger points
+  // are not published; they are round values chosen so the flown profile
+  // resembles SpaceX practice (max-Q bucket, ~2.2 g booster / 3.5 g ship
+  // acceleration caps, throttled fine-targeting at the end of boostback,
+  // RVac-only trim before SECO).
   shipGuidance: {
     throttle: 0.82, accelLimit: 3.5 * 9.80665,
-    vernierDv: 550,                   // m/s to go when the SL engines shut down
+    vernierDv: 500,                   // m/s to go when the SL engines shut down
     vernierThrottle: 0.5,             // RVac throttle during the final trim
   },
   boosterReturn: {
@@ -256,7 +267,14 @@ export function flyStack(F, pitchRateDeg, dt, rec) {
     const d = describe(s);
     let groups, dir;
     if (tMeco === null) {
-      tau = thr.update(dt, { q: d.q, mass: s.m, thrustPerTau: nAll * engineThrust(B.engine, d.pa, 1) });
+      const cd = interp(CD_SLENDER, d.mach);
+      const rhoUp = earthAtmosphere(d.alt + 50).rho, rhoDn = earthAtmosphere(Math.max(0, d.alt - 50)).rho;
+      tau = thr.update(dt, {
+        q: d.q, mass: s.m, thrustPerTau: nAll * engineThrust(B.engine, d.pa, 1),
+        rho: d.rho, drhodh: (rhoUp - rhoDn) / (d.alt + 50 - Math.max(0, d.alt - 50)),
+        speed: d.speed, hdot: d.speed * Math.sin(d.gamma),
+        gAlong: norm(gravity(s.r)) * Math.sin(d.gamma), drag: d.q * cd * REF_AREA,
+      });
       groups = [{ engine: B.engine, n: nAll, tau, ramp: 1 }];
       qPeak = Math.max(qPeak, d.q);
       if (tTurn === null && qPeak > 1e4 && d.q < F.ascentGuidance.qTurn) tTurn = s.t - TL.release;

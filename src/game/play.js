@@ -91,7 +91,7 @@ export async function attach({ ctx, renderer, THREE, sceneId, params }) {
   const renderWarp = () => {
     const lab = warpLevels.labels?.[warpIdx] ?? `${warpLevels[warpIdx]}x`;
     warpEl.textContent = paused ? 'PAUSED' : `WARP ${lab}`;
-    warpEl.classList.toggle('active', warpIdx > 0 || paused);
+    warpEl.classList.toggle('active', (warpLevels[warpIdx] ?? 1) !== 1 || paused);
   };
   const setWarp = (i) => { warpIdx = Math.max(0, Math.min(warpLevels.length - 1, i)); renderWarp(); };
   warpDown.addEventListener('click', () => setWarp(warpIdx - 1));

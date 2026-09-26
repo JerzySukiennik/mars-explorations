@@ -131,8 +131,8 @@
   .g-build tr[data-k]{cursor:pointer} .g-build tr[data-k]:hover td{background:rgba(154,208,255,.08)}
 
   /* mission-select menu */
-  .g-menu{position:absolute;inset:0;overflow:auto;padding:40px 16px 32px;background:linear-gradient(90deg,rgba(0,0,0,.78),rgba(0,0,0,.45) 60%,rgba(0,0,0,.2))}
-  .g-menu>*{max-width:860px;margin-left:max(0px,calc(50vw - 560px))}
+  .g-menu{position:absolute;inset:0;overflow:auto;padding:40px 16px 32px max(16px,calc(50vw - 560px));background:linear-gradient(90deg,rgba(0,0,0,.78),rgba(0,0,0,.45) 60%,rgba(0,0,0,.2))}
+  .g-menu>*{max-width:860px}
   .g-eyebrow{font:12px var(--g-mono);letter-spacing:.24em;color:var(--g-accent)}
   .g-mhead h1{margin:4px 0 8px;font:700 clamp(30px,5vw,52px)/1 var(--g-num);letter-spacing:.12em}
   .g-mhead .g-note{max-width:62ch;font-size:14px}
@@ -150,6 +150,22 @@
   .g-cardmeta [data-st="COMPLETE"]{color:var(--g-ok)} .g-cardmeta [data-st="NEXT"]{color:var(--g-accent)}
   .g-mfoot{margin-top:18px} .g-mfoot a{color:var(--g-accent)}
 
+  @media (max-width:1280px){
+    .g-webcast{padding:12px 16px 10px;gap:12px}
+    .g-wc-block{gap:12px}
+    .g-wc-att{width:56px}
+    .g-wc-engines{width:80px;height:80px}
+    .g-wc-tele{min-width:0}
+    .g-wc-line{grid-template-columns:84px 1fr 40px}
+    .g-wc-line .k{font-size:14px} .g-wc-line .v{font-size:18px} .g-wc-line .u{font-size:11px}
+    .g-wc-tank .k{font-size:12px} .g-wc-tank{grid-template-columns:40px 1fr}
+    .g-wc-clock{font-size:30px} .g-wc-centre{min-width:0}
+  }
+  @media (max-width:1100px){ .g-wc-att{display:none} }
+  @media (max-height:760px){
+    .g-minimap{left:50%;transform:translateX(-50%);width:170px} .g-mapcv{height:150px}
+    .g-row{padding:1px 0} .g-val{font-size:14px}
+  }
   @media (max-width:900px){
     .g-left,.g-right,.g-base,.g-plot,.g-gauges,.g-sideview{width:calc(50vw - 20px)}
     .g-right{top:auto;bottom:220px;max-height:40vh;overflow:auto}

@@ -36,20 +36,36 @@ const pickNum = (obj, names, dflt) => {
   return dflt;
 };
 
-/** Merge recognised values from src/physics/refill.js into the defaults. */
+const safe = (f) => { try { const v = f(); return Number.isFinite(v) ? v : NaN; } catch { return NaN; } };
+
+/**
+ * Merge src/physics/refill.js into the defaults. Recognised: transferRate(P)
+ * .total (kg/s), tankerDelivery(P).deliver (kg), boiloff(P, fill).mdot (kg/s,
+ * fill-dependent heat leak), PARAMS.cadenceDays / leoAltKm, and plain
+ * constants under a few common names.
+ */
 export function refillParams(R, over = {}) {
   const p = { ...DEFAULTS };
+  p.boilKgPerDay = (fill) => fill * p.shipCapacityKg * p.boiloffPerDay;
+  p.source = 'game defaults';
   if (R) {
-    const t = (names) => { const v = pickNum(R, names, NaN); return Number.isFinite(v) ? v * 1000 : NaN; };
+    const P = R.PARAMS;
     const or = (...v) => v.find(Number.isFinite);
-    p.tankerDeliveryKg = or(pickNum(R, ['TANKER_DELIVERY_KG', 'tankerDeliveryKg', 'TANKER_PAYLOAD_KG', 'tankerPayloadKg', 'propPerTankerKg', 'PROP_PER_TANKER_KG'], NaN),
-      t(['prop_per_tanker_t', 'PROP_PER_TANKER_T', 'propPerTankerT']), p.tankerDeliveryKg);
-    p.transferRateKgS = or(pickNum(R, ['TRANSFER_RATE_KG_S', 'transferRateKgS', 'transferRate_kg_s'], NaN),
-      t(['transfer_rate_t_per_min', 'transferRateTPerMin']) / 60, p.transferRateKgS);
-    p.boiloffPerDay = or(pickNum(R, ['BOILOFF_PER_DAY', 'boiloffPerDay', 'BOILOFF_FRACTION_PER_DAY'], NaN),
-      pickNum(R, ['boiloff_pct_per_day', 'boiloffPctPerDay'], NaN) / 100, p.boiloffPerDay);
+    const t = (names) => pickNum(R, names, NaN) * 1000;
+    p.tankerDeliveryKg = or(
+      typeof R.tankerDelivery === 'function' ? safe(() => R.tankerDelivery(P).deliver) : NaN,
+      pickNum(R, ['TANKER_DELIVERY_KG', 'tankerDeliveryKg', 'propPerTankerKg'], NaN), t(['prop_per_tanker_t', 'PROP_PER_TANKER_T']), p.tankerDeliveryKg);
+    p.transferRateKgS = or(
+      typeof R.transferRate === 'function' ? safe(() => R.transferRate(P).total) : NaN,
+      pickNum(R, ['TRANSFER_RATE_KG_S', 'transferRateKgS'], NaN), t(['transfer_rate_t_per_min']) / 60, p.transferRateKgS);
+    p.boiloffPerDay = or(pickNum(R, ['BOILOFF_PER_DAY', 'boiloffPerDay'], NaN), pickNum(R, ['boiloff_pct_per_day'], NaN) / 100, p.boiloffPerDay);
+    if (typeof R.boiloff === 'function' && Number.isFinite(safe(() => R.boiloff(P, 0.5).mdot))) {
+      p.boilKgPerDay = (fill) => { const v = safe(() => R.boiloff(P, Math.max(0.01, Math.min(1, fill))).mdot); return Number.isFinite(v) ? v * 86400 : fill * p.shipCapacityKg * p.boiloffPerDay; };
+    }
+    if (Number.isFinite(P?.cadenceDays)) p.cadenceDays = P.cadenceDays;
+    if (Number.isFinite(P?.leoAltKm)) p.orbitAltKm = P.leoAltKm;
     p.source = 'physics/refill.js';
-  } else p.source = 'game defaults';
+  }
   return Object.assign(p, over);
 }
 
@@ -123,7 +139,7 @@ export function stepRefill(s, dt, c = {}) {
   if (s.mode === 'done' || s.mode === 'failed') return s;
   const days = dt / 86400;
   // Boil-off applies at all times to what is in the tanks.
-  const boil = s.shipProp * s.p.boiloffPerDay * days;
+  const boil = Math.min(s.shipProp, s.p.boilKgPerDay(s.shipProp / s.p.shipCapacityKg) * days);
   s.shipProp -= boil; s.lostBoiloff += boil;
   s.day += days;
 
@@ -132,9 +148,12 @@ export function stepRefill(s, dt, c = {}) {
   if (s.mode === 'waiting') {
     if (c.skip && s.nextTankerDay > s.day) {
       // jump to the next tanker arrival, boiling off the propellant on the way
-      const dd = s.nextTankerDay - s.day;
-      const left = s.shipProp * Math.pow(1 - s.p.boiloffPerDay, dd);
-      s.lostBoiloff += s.shipProp - left; s.shipProp = left; s.day = s.nextTankerDay;
+      const dd = s.nextTankerDay - s.day, n = Math.max(1, Math.ceil(dd * 4)), h = dd / n;
+      for (let i = 0; i < n; i++) {
+        const b = Math.min(s.shipProp, s.p.boilKgPerDay(s.shipProp / s.p.shipCapacityKg) * h);
+        s.shipProp -= b; s.lostBoiloff += b;
+      }
+      s.day = s.nextTankerDay;
     }
     if (s.day >= s.nextTankerDay) spawnTanker(s);
     else s.message = `Next tanker in ${(s.nextTankerDay - s.day).toFixed(1)} d`;

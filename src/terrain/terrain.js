@@ -164,15 +164,15 @@ void main(){
     sand *= 1.0 + 0.9 * (rnd(gc, 91u) - 0.5) * grainAmp;
     sand *= vec3(1.0 + 0.10 * grainAmp * (rnd(gc, 94u) - 0.5), 1.0, 1.0 + 0.12 * grainAmp * (rnd(gc, 95u) - 0.5));
     // pebbles (gravel lag on the sand), analytic
-    const float PC = 0.022;
-    float dens = 0.02 + 0.40 * smoothstep(0.1, 0.7, fbm(xz * 0.7, 2, 71u) + 0.35 * gnoise(xz * 4.0, 75u));
+    const float PC = 0.014;
+    float dens = 0.03 + 0.6 * smoothstep(0.0, 0.6, fbm(xz * 0.7, 2, 71u) + 0.35 * gnoise(xz * 4.0, 75u));
     ivec2 c0 = ivec2(floor(xz / PC));
     vec2 sxz = normalize(uSunDir.xz + 1e-5); float cotE = sqrt(max(1.0 - uSunDir.y * uSunDir.y, 0.0)) / max(uSunDir.y, 0.05);
     for (int j = -1; j <= 1; j++) for (int i = -1; i <= 1; i++){
       ivec2 c = c0 + ivec2(i, j);
       if (rnd(c, 72u) > dens) continue;
       vec2 ctr = (vec2(c) + 0.5 + 0.8 * (rnd2(c, 73u) - 0.5)) * PC;
-      float r = 0.003 + 0.011 * pow(rnd(c, 74u), 2.0);
+      float r = 0.002 + 0.0065 * pow(rnd(c, 74u), 2.0);
       vec2 q = xz - ctr;
       if (dot(q, q) > 9.0 * r * r) continue;
       float hgt = r * (0.45 + 0.45 * rnd(c, 77u));
@@ -200,23 +200,31 @@ void main(){
     float steep = smoothstep(0.8, 2.0, gl0);
     vec2 hn = g / max(gl0, 1e-6);
     vec2 rc = mix(xz, vec2(dot(xz, vec2(-hn.y, hn.x)), p.y + 0.3 * dot(xz, hn)), steep);
-    rdn = fbmd(rc * 22.0, 2, 83u, 0.5);
-    // crumbly relief: ridged noise (sharp crests, rounded hollows), 3 octaves
-    float rh = 0.0; vec2 rgr = vec2(0.0); { vec2 q = rc * 48.0; float a = 1.0, f = 48.0; mat2 m = mat2(1.0);
-      for (int k = 0; k < 3; k++){ vec3 nn = gnoised(q, 87u + uint(k) * 7u); float r1 = 1.0 - abs(nn.x); rh += a * r1 * r1;
-        rgr += a * f * (transpose(m) * (-2.0 * r1 * sign(nn.x) * nn.yz)); q = ROT * q * 2.1; m = ROT * m; f *= 2.1; a *= 0.45; } }
+    rdn = fbmd(rc * 35.0, 2, 83u, 0.5);
+    // crumbly / flaky relief: Worley bumps (anisotropic), with dark crevices between them
+    float wF1 = 9.0, wF2 = 9.0; vec2 wd = vec2(0.0); float wcell = 0.5;
+    {
+      float ang = D.z * 6.283; mat2 Ra = mat2(cos(ang), sin(ang), -sin(ang), cos(ang));
+      vec2 q = (Ra * (rc + 0.012 * rdn.yz / 22.0 + 0.006 * vec2(gnoise(rc * 30.0, 90u), gnoise(rc * 30.0, 91u)))) * vec2(90.0, 150.0);
+      vec2 qi = floor(q), qf = q - qi;
+      for (int j = -1; j <= 1; j++) for (int i = -1; i <= 1; i++){
+        ivec2 c = ivec2(qi) + ivec2(i, j); vec2 o = vec2(i, j) + rnd2(c, 88u) - qf; float dd = dot(o, o);
+        if (dd < wF1){ wF2 = wF1; wF1 = dd; wd = o * (0.3 + rnd(c, 92u)); wcell = rnd(c, 93u); } else if (dd < wF2) wF2 = dd;
+      }
+      wF1 = sqrt(wF1); wF2 = sqrt(wF2);
+      vec2 gq = 2.0 * wd * vec2(90.0, 150.0);
+      wd = transpose(Ra) * gq;
+    }
+    float fr2 = clamp(1.0 - fw * 110.0, 0.0, 1.0);
+    float gap = 1.0 - smoothstep(0.0, 0.18 + fw * 60.0, wF2 - wF1);
     vec3 rdn2 = fbmd(rc * 170.0, 2, 84u, 0.5);
     float fr = clamp(1.0 - fw * 170.0 * 0.5, 0.0, 1.0);
-    float fr2 = clamp(1.0 - fw * 100.0 * 0.5, 0.0, 1.0);
-    gRock = rdn.yz * 0.004 * 22.0 + rgr * 0.0022 * fr2 + rdn2.yz * 0.0003 * 170.0 * fr;
-    // fine fractures: zero-crossings of a warped noise, sparse
-    vec3 cn = gnoised(rc * 16.0 + 0.3 * rdn.yz, 85u);
-    crack = (1.0 - smoothstep(0.0, 0.05 + fw * 25.0, abs(cn.x))) * smoothstep(0.1, 0.5, gnoise(rc * 3.0, 86u));
-    gRock += crack * sign(cn.x) * normalize(cn.yz + 1e-5) * 0.5;
+    gRock = rdn.yz * 0.0025 * 35.0 + wd * 0.0011 * fr2 * (0.5 + 0.5 * smoothstep(-0.3, 0.3, fbm(rc * 5.0, 2, 89u))) + rdn2.yz * 0.0003 * 170.0 * fr;
+    crack = gap * fr2 * 0.18;
     vec2 gm = g + gRock; vec3 nm = normalize(vec3(-gm.x, 1.0, -gm.y));
     float dn = nm.y + 0.22 * fbm(rc * 9.0, 2, 81u) + 0.08 * (D.z - 0.5) + 0.05 * gnoise(rc * 60.0, 82u);
-    float dust = smoothstep(0.25, 0.75, 0.3 + 0.35 * (nm.y - 0.75) + 0.5 * fbm(rc * 8.0, 3, 81u) + 0.35 * (rh - 0.6) + 0.2 * (D.z - 0.5));
-    rockA = mix(uRockClean, uRockDust, dust) * (0.92 + 0.16 * D.z) * (1.0 + 0.06 * rdn.x) * (1.0 - 0.45 * crack);
+    float dust = smoothstep(0.1, 0.8, 0.5 + 0.35 * (nm.y - 0.75) + 0.4 * fbm(rc * 5.0, 3, 81u) + 0.2 * (0.5 - wF1) + 0.2 * (D.z - 0.5));
+    rockA = mix(uRockClean, uRockDust, dust) * (0.92 + 0.16 * D.z) * (1.0 + 0.06 * rdn.x + 0.16 * (wcell - 0.5) * fr2) * (1.0 - 0.45 * crack);
   }
 
   // normal
@@ -262,7 +270,7 @@ export class Terrain {
     const gl = renderer.getContext();
     const floatLinear = renderer.extensions.has('OES_texture_float_linear') && renderer.extensions.has('EXT_color_buffer_float');
     this.texType = floatLinear ? THREE.FloatType : THREE.HalfFloatType;
-    this.fineN = opts.fineN || 1536; this.fineTexel = opts.fineTexel || 0.005;
+    this.fineN = opts.fineN || 1536; this.fineTexel = opts.fineTexel || 0.003;
     this.coarseN = opts.coarseN || 512; this.coarseTexel = opts.coarseTexel || 0.24;
     const k = opts.rockK ?? 0.10;
     const A = golombekLayer(k, 0.07, 0.012, 0.05), B = golombekLayer(k, 0.30, 0.05, 0.6);
@@ -296,7 +304,7 @@ export class Terrain {
       uBoxInv: { value: boxInv }, uBoxN: { value: 0 },
       uSand: { value: new THREE.Vector3(0.24, 0.180, 0.104) },
       uRockDust: { value: new THREE.Vector3(0.45, 0.29, 0.138) },
-      uRockClean: { value: new THREE.Vector3(0.30, 0.262, 0.212) },
+      uRockClean: { value: new THREE.Vector3(0.33, 0.28, 0.20) },
       uPebble: { value: new THREE.Vector3(0.44, 0.30, 0.16) },
     };
     this.material = new THREE.ShaderMaterial({ vertexShader: VERT, fragmentShader: FRAG, uniforms: this.uniforms, extensions: {} });
@@ -345,7 +353,8 @@ export class Terrain {
     const THREE = this.THREE; const f = new THREE.Vector3(); camera.getWorldDirection(f);
     const p = camera.position;
     const pitch = Math.asin(Math.max(-1, Math.min(1, f.y)));
-    const ahead = pitch < -0.05 ? Math.min(p.y / Math.tan(-pitch), this.fineN * this.fineTexel * 0.3) : this.fineN * this.fineTexel * 0.3;
+    const fsz = this.fineN * this.fineTexel;
+    const ahead = pitch < -0.05 ? Math.min(p.y / Math.tan(-pitch) * 1.08, fsz * 0.45) : fsz * 0.45;
     const fl = Math.hypot(f.x, f.z) || 1;
     const cx = p.x + f.x / fl * ahead, cz = p.z + f.z / fl * ahead;
     const fs = this.fineN * this.fineTexel, cs = this.coarseN * this.coarseTexel;

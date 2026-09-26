@@ -80,7 +80,7 @@ export async function create(game) {
     dp.setBar('prop', f, `${fmt(s.shipProp / 1e3)} t`, s.shipProp >= requiredKg ? 'ok' : '');
     dp.setBar('lox', f, ''); dp.setBar('ch4', f, '');
     dp.set('need', fmt(requiredKg / 1e3));
-    dp.set('boil', fmt(s.shipProp * s.p.boiloffPerDay / 1e3, 2));
+    dp.set('boil', fmt(s.p.boilKgPerDay(s.shipProp / s.p.shipCapacityKg) / 1e3, 2));
     dp.set('lost', fmt(s.lostBoiloff / 1e3, 2));
     dp.set('day', fmt(s.day, 2)); dp.set('tk', String(s.tankers.length));
     dp.set('next', s.mode === 'waiting' ? `${fmt(Math.max(0, s.nextTankerDay - s.day), 2)} d` : s.mode === 'approach' ? 'ON APPROACH' : s.mode === 'transfer' ? 'DOCKED' : '--');

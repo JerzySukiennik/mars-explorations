@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Realistic Starship-to-Mars game, judged blind against real footage and published data",
   "scripts": {
-    "test": "node --test tests/",
+    "test": "node --test tests/*.test.js",
     "serve": "python3 -m http.server 8080",
     "shoot": "node tools/shoot.mjs"
   },

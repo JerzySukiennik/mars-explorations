@@ -46,7 +46,7 @@ export async function create({ THREE, renderer, params, hud }) {
   // to the direct beam for tau ~0.5 (redder than the beam: forward scattering by dust).
   const sunI = new THREE.Vector3(1, 1, 1), skyI = new THREE.Vector3(0.17, 0.138, 0.110);
 
-  const terrain = new Terrain(THREE, renderer, { rockK: 0.10, outcrop: 0.0 });
+  const terrain = new Terrain(THREE, renderer, { rockK: 0.16, outcrop: 0.0 });
   terrain.setSun(sun.dir, sunI, skyI);
   scene.add(terrain.buildGrid(W(), Hh()));
 
@@ -57,7 +57,7 @@ export async function create({ THREE, renderer, params, hud }) {
   const dl = new THREE.DirectionalLight(0xffffff, 1.0); dl.position.copy(sun.dir).multiplyScalar(10); scene.add(dl); scene.add(dl.target);
   const hl = new THREE.HemisphereLight(new THREE.Color(skyI.x, skyI.y, skyI.z).multiplyScalar(1.6), new THREE.Color(0.06, 0.045, 0.03), 1.0); scene.add(hl);
 
-  const chain = new MastcamZChain(THREE, renderer, { expo: 7.2, vignette: 0.12, sigma: 0.62, jpegQuality: 90, seed: 211 });
+  const chain = new MastcamZChain(THREE, renderer, { expo: 7.2, vignette: 0.12, sigma: 0.5, jpegQuality: 90, seed: 211 });
 
   // ---- rover state ----
   const state = { x: 0, z: 0, heading: 0, mastAz: 0, mastEl: -0.47, focal: 34, view: 'mastcam' };
@@ -126,7 +126,7 @@ export async function create({ THREE, renderer, params, hud }) {
       state.x = 3.0; state.z = -7.0; state.focal = 34; state.view = 'mastcam';
       state.mastAz = 22 * Math.PI / 180;                 // mast turned right of the rover's heading
       state.heading = -(camAz) + state.mastAz;           // three: heading = yaw about +y (0 = north)
-      state.mastEl = -27 * Math.PI / 180;
+      state.mastEl = -36 * Math.PI / 180;
       let t0 = performance.now(); terrain.bakeCoarse(state.x, state.z); T('bake coarse', t0);
       placeRover(); placeCamera(); t0 = performance.now(); terrain.follow(camera, true); T('bake fine', t0); refreshShadows();
     }

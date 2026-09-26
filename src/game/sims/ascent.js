@@ -83,8 +83,22 @@ export function boosterLitMask(nLit) {
   return m;
 }
 
+/** Piecewise-linear Cd(M) from a [[M, Cd], ...] table. */
+export function tableCd(tab) {
+  return (M) => {
+    if (M <= tab[0][0]) return tab[0][1];
+    for (let i = 1; i < tab.length; i++) if (M <= tab[i][0]) { const [m0, c0] = tab[i - 1], [m1, c1] = tab[i]; return c0 + (c1 - c0) * (M - m0) / (m1 - m0); }
+    return tab[tab.length - 1][1];
+  };
+}
+const isTable = (t) => Array.isArray(t) && t.length > 1 && t.every((r) => Array.isArray(r) && Number.isFinite(r[0]) && Number.isFinite(r[1]));
+
 export function createAscent(opts = {}) {
   const veh = vehicleModel(opts.V);
+  // Drag tables from src/physics/ascent.js (AS) when present.
+  const AS = opts.AS;
+  const cdStack = isTable(AS?.CD_SLENDER) ? tableCd(AS.CD_SLENDER) : cdMach;
+  const cdBooster = isTable(AS?.CD_TAIL_FIRST) ? tableCd(AS.CD_TAIL_FIRST) : (M) => cdMach(M) * 3.2;
   const lat = (opts.latDeg ?? STARBASE_LAT_DEG) * DEG;
   const payload = opts.payload ?? 100e3;
   const s = {
@@ -100,6 +114,7 @@ export function createAscent(opts = {}) {
     events: [], staged: false, stageTime: null, seco: false,
     boosterReserve: opts.boosterReserve ?? 0.10,     // fraction kept for boostback + catch
     targetAltKm: opts.targetAltKm ?? 160,
+    cdStack, cdBooster, dragSource: cdStack === cdMach ? 'built-in' : 'physics/ascent.js',
     kickDeg: opts.kickDeg ?? 5.5,
     booster: null,               // separated booster sub-state
     failReason: null,
@@ -134,14 +149,14 @@ function integrate(o, dt, ar, at, omega) {
   o.r += o.vr * dt; o.th += o.vt / o.r * dt;
 }
 
-function dragAccel(o, mass, cdScale = 1) {
+function dragAccel(o, mass, cdScale = 1, cdFn = cdMach) {
   const h = o.r - EARTH.R;
   const atm = earthAtmosphere(h);
   const v = Math.hypot(o.vr, o.vt);
   const M = v / atm.a;
   const q = 0.5 * atm.rho * v * v;
   const A = Math.PI * 4.5 * 4.5;
-  const D = q * cdMach(M) * A * cdScale;
+  const D = q * cdFn(M) * A * cdScale;
   const k = v > 1e-6 ? D / mass / v : 0;
   return { ar: -k * o.vr, at: -k * o.vt, q, M, p: atm.p };
 }
@@ -193,7 +208,7 @@ function step1(s, dt, c) {
   if (s.phase === 'booster' || s.phase === 'ship') {
     const onBooster = s.phase === 'booster';
     const mass = (onBooster ? veh.booster.dry + s.boosterProp : 0) + veh.ship.dry + s.shipProp + s.payload;
-    const d = dragAccel(s, mass, onBooster ? 1 : 0.7);
+    const d = dragAccel(s, mass, onBooster ? 1 : 0.7, s.cdStack);
     s.q = d.q; s.mach = d.M;
     if (d.q > s.maxQ) { s.maxQ = d.q; s.maxQt = s.t; }
     else if (!s.events.some((e) => e.name === 'MAX-Q') && s.maxQ > 20e3 && d.q < 0.97 * s.maxQ) log(s, 'MAX-Q');
@@ -286,7 +301,7 @@ function stepBooster(s, dt) {
   if (b.outcome) return;
   const { veh } = s;
   const mass = veh.booster.dry + b.prop;
-  const d = dragAccel(b, mass, 3.2); // engine-first fall with grid fins: blunt
+  const d = dragAccel(b, mass, 1, s.cdBooster); // engine-first fall with grid fins: blunt
   const alt = b.r - EARTH.R;
   let lit = 0, dirR = 0, dirT = 0;
   const g = EARTH.mu / (b.r * b.r);

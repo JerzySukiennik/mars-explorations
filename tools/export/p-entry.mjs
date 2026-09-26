@@ -9,7 +9,7 @@
 // webcast HUD long before the reference window. From there everything -
 // entry-interface time and speed, peak speed, plateau, deceleration and
 // terminal velocity - is integrated by the entry model (US-1976 atmosphere,
-// crossflow/Newtonian aero, altitude-rate bank guidance).
+// crossflow/Newtonian aero, phased bank guidance with bank reversals).
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -18,7 +18,12 @@ import * as E from '../../src/physics/entry.js';
 export const IFT5 = Object.freeze({
   inclinationDeg: 26.5,                     // Starbase due-east launch, ~26.5 deg orbit plane
   apogee: { t: 1440, h: 212e3, v: 26223 / 3.6, gammaDeg: 0 },
-  flipAltitude: 500,                        // m: belly-flop -> flip / landing-burn start
+  flipAltitude: 500,
+  // Entry guidance settings (starshipEntryGuidance): banked pre-entry, a
+  // constant-bank pull-out whose phugoid gives the drag pulse and plateau,
+  // then a 42 deg equilibrium glide with bank reversals on a 10 deg heading
+  // deadband, 5 deg/s roll rate.
+  guidance: { preBankDeg: 70, activation: 2.5, pulloutBankDeg: 50, bankGlideDeg: 42, headingDeadbandDeg: 10, rollRateDeg: 5 },                        // m: belly-flop -> flip / landing-burn start
   window: [2599, 3923],                     // reference series window (s)
 });
 
@@ -26,7 +31,7 @@ export function runEarthReentry(opts = {}) {
   const res = E.simulateEntry({
     planet: E.EARTH, inclinationDeg: IFT5.inclinationDeg, dt: 0.25,
     init: IFT5.apogee, hMin: 0, tMax: 4200,
-    vehicle: opts.vehicle, guidance: E.altitudeRateGuidance(opts.guidance ?? {}),
+    vehicle: opts.vehicle, guidance: E.starshipEntryGuidance({ ...IFT5.guidance, ...(opts.guidance ?? {}) }),
   });
   const s = res.samples;
   const at = (t, k) => E.sampleAt(s, t, k);
