@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mars Explorations</title>
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden;color:#ddd;font:14px system-ui,sans-serif}
+  canvas{display:block}
+  #hud{position:fixed;left:12px;top:10px;pointer-events:none;white-space:pre;text-shadow:0 0 3px #000}
+  body.shot #hud{display:none}
+</style>
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.js", "three/addons/": "./vendor/jsm/" } }
+</script>
+</head>
+<body>
+<div id="hud"></div>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<title>Mars Realism Bench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#EDF0F3; --panel:#F8F9FB; --ink:#18212B; --muted:#5A6573; --rule:#D3D9E0;
+  --accent:#B4532A; --pass:#2F7A4E; --fail:#A33A3A; --wait:#8A6D1F; --chip:#E2E7EC;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  color-scheme:dark;--bg:#12161B;--panel:#191F26;--ink:#E4E8ED;--muted:#96A1AE;--rule:#2A323C;
+  --accent:#DB7A4E;--pass:#5DB585;--fail:#E07171;--wait:#D2B25A;--chip:#232B34;}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#12161B;--panel:#191F26;--ink:#E4E8ED;--muted:#96A1AE;--rule:#2A323C;
+  --accent:#DB7A4E;--pass:#5DB585;--fail:#E07171;--wait:#D2B25A;--chip:#232B34;}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);padding-inline:16px;padding-block:24px 48px}
+.wrap{max-width:1180px;margin:0 auto;display:grid;gap:28px}
+header{display:grid;gap:6px}
+.eyebrow{font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+h1{font:700 clamp(28px,4vw,40px)/1.1 var(--display);margin:0;text-wrap:balance}
+h2{font:600 20px/1.2 var(--display);margin:0 0 12px;letter-spacing:.01em}
+.lede{color:var(--muted);max-width:68ch;margin:0}
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.stat{background:var(--panel);padding:14px 16px;display:grid;gap:2px}
+.stat b{font:500 28px/1 var(--mono);font-variant-numeric:tabular-nums}
+.stat span{font:500 11px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.track{display:grid;gap:10px}
+.tbl{overflow-x:auto;border:1px solid var(--rule);border-radius:6px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;min-width:760px}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--rule)}
+th{font:500 11px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+tr:last-child td{border-bottom:0}
+td.num{font:14px var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pname{font:600 15px var(--display)}
+.ref{color:var(--muted);font-size:13px}
+.gap{font-size:14px;max-width:52ch}
+.pill{display:inline-block;font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:3px;white-space:nowrap;border:1px solid currentColor}
+.s-won{color:var(--pass)} .s-lost{color:var(--fail)} .s-building,.s-critiquing,.s-confirming{color:var(--wait)} .s-queued{color:var(--muted)}
+.pair{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.pair figure{margin:0;display:grid;gap:2px}
+.pair img{width:150px;height:auto;border-radius:3px;border:1px solid var(--rule);background:#000}
+.pair figcaption{font:11px var(--mono);color:var(--muted)}
+.feed{display:grid;gap:0;border:1px solid var(--rule);border-radius:6px;background:var(--panel);max-height:520px;overflow:auto}
+.ev{display:grid;grid-template-columns:132px 170px 1fr;gap:12px;padding:10px 14px;border-bottom:1px solid var(--rule);font-size:14px}
+.ev:last-child{border-bottom:0}
+.ev time,.ev .who{font:12px var(--mono);color:var(--muted)}
+@media (max-width:640px){.ev{grid-template-columns:1fr}}
+.note{font-size:13px;color:var(--muted)}
+.empty{padding:18px;color:var(--muted)}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Blind critic log · Starship to Mars</div>
+    <h1>Mars Realism Bench</h1>
+    <p class="lede">Each piece of the game is judged on its own. A critic with fresh context sees our rendered frame or sim output next to a real SpaceX webcast frame, NASA raw image or published number, with labels stripped and order shuffled. A piece passes only when the critic picks ours as the real one, twice in a row, from two independent critics.</p>
+  </header>
+
+  <section class="strip" aria-label="Summary">
+    <div class="stat"><b id="n-total">–</b><span>Pieces</span></div>
+    <div class="stat"><b id="n-won" style="color:var(--pass)">–</b><span>Passed blind</span></div>
+    <div class="stat"><b id="n-open">–</b><span>Still losing</span></div>
+    <div class="stat"><b id="n-rounds">–</b><span>Critic rounds</span></div>
+    <div class="stat"><b id="n-updated" style="font-size:16px">–</b><span>Last update (UTC)</span></div>
+  </section>
+
+  <section class="track"><h2>Ship and flight physics</h2><div class="tbl"><table><thead><tr><th>Piece</th><th>Status</th><th>Round</th><th>Last blind verdict</th><th>Biggest remaining gap</th></tr></thead><tbody id="t-physics"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody></table></div></section>
+  <section class="track"><h2>Ship visuals</h2><div class="tbl"><table><thead><tr><th>Piece</th><th>Status</th><th>Round</th><th>Last blind verdict</th><th>Biggest remaining gap</th></tr></thead><tbody id="t-shipvis"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody></table></div></section>
+  <section class="track"><h2>Mars surface</h2><div class="tbl"><table><thead><tr><th>Piece</th><th>Status</th><th>Round</th><th>Last blind verdict</th><th>Biggest remaining gap</th></tr></thead><tbody id="t-surface"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody></table></div></section>
+
+  <section><h2>Round log</h2><div class="feed" id="feed"><div class="empty">No rounds yet.</div></div></section>
+  <p class="note" id="conn">Connecting to the live log…</p>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtT = (iso) => { if (!iso) return '–'; const d = new Date(iso); return isNaN(d) ? esc(iso) : d.toISOString().slice(5,16).replace('T',' '); };
+const TRACKS = { physics:'t-physics', shipvis:'t-shipvis', surface:'t-surface' };
+let pieces = [], events = [];
+
+function render(){
+  const won = pieces.filter(p => p.status === 'won').length;
+  $('n-total').textContent = pieces.length;
+  $('n-won').textContent = won;
+  $('n-open').textContent = pieces.length - won;
+  $('n-rounds').textContent = pieces.reduce((a,p)=>a+(+p.round||0),0);
+  const last = [...pieces.map(p=>p.updated), ...events.map(e=>e.t)].filter(Boolean).sort().pop();
+  $('n-updated').textContent = fmtT(last);
+  for (const [track, id] of Object.entries(TRACKS)) {
+    const rows = pieces.filter(p => p.track === track).sort((a,b)=>(a.order??0)-(b.order??0));
+    $(id).innerHTML = rows.length ? rows.map(p => `
+      <tr>
+        <td><div class="pname">${esc(p.title)}</div><div class="ref">vs ${esc(p.reference)}</div>
+          ${p.ours_img || p.real_img ? `<div class="pair">${p.ours_img?`<figure><img src="${esc(p.ours_img)}" alt="Our latest frame for ${esc(p.title)}"><figcaption>ours</figcaption></figure>`:''}${p.real_img?`<figure><img src="${esc(p.real_img)}" alt="Real reference frame for ${esc(p.title)}"><figcaption>real</figcaption></figure>`:''}</div>`:''}</td>
+        <td><span class="pill s-${esc(p.status||'queued')}">${esc(p.status||'queued')}</span></td>
+        <td class="num">${esc(p.round ?? 0)}${p.wins?` · ${esc(p.wins)}/2 wins`:''}</td>
+        <td class="gap">${esc(p.verdict || '–')}</td>
+        <td class="gap">${esc(p.gap || '–')}</td>
+      </tr>`).join('') : '<tr><td colspan="5" class="empty">No pieces yet.</td></tr>';
+  }
+  const evs = [...events].sort((a,b)=>String(b.t).localeCompare(String(a.t))).slice(0,200);
+  $('feed').innerHTML = evs.length ? evs.map(e => `
+    <div class="ev"><time>${fmtT(e.t)}</time><div class="who">${esc(e.piece)} · r${esc(e.round)} · <span class="${e.ours_won?'s-won':'s-lost'}">${e.ours_won?'ours picked':'real picked'}</span></div><div>${esc(e.gap || e.note || '')}</div></div>`).join('') : '<div class="empty">No rounds yet.</div>';
+}
+
+(async () => {
+  const db = await window.claude?.use?.('db');
+  if (!db) { $('conn').textContent = 'The live log is not available in this view.'; render(); return; }
+  $('conn').textContent = 'Live. Rows update as critics report.';
+  db.collection('pieces').onSnapshot(s => { pieces = s.docs.map(d => ({ id:d.id, ...d.data() })); render(); },
+    () => { $('conn').textContent = 'Live updates stopped. Reload to reconnect.'; });
+  db.collection('rounds').onSnapshot(s => { events = s.docs.flatMap(d => (d.data().items || [])); render(); },
+    () => {});
+})();
+render();
+</script>

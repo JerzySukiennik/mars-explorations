@@ -1,0 +1,14 @@
+{
+  "name": "mars-explorations",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Realistic Starship-to-Mars game, judged blind against real footage and published data",
+  "scripts": {
+    "test": "node --test tests/",
+    "serve": "python3 -m http.server 8080",
+    "shoot": "node tools/shoot.mjs"
+  },
+  "dependencies": { "three": "^0.186.1" },
+  "devDependencies": { "playwright": "^1.63.0" }
+}
