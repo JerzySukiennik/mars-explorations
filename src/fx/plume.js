@@ -122,8 +122,9 @@ export function makeCompositeMaterial(THREE, u) {
       vec3 colLight(vec3 p, out vec3 ldir){
         vec2 dxz = p.xz - uCol.xz; float r = max(length(dxz), 28.);
         float top = uCol.y - 2.;
-        float a = atan((top - p.y) / r) - atan((0. - p.y) / r);
-        vec3 q = vec3(uCol.x, clamp(p.y, 0., top), uCol.z);
+        float bot = max(0., top - 400.);   // luminous part of the jet only (matches the drawn column)
+        float a = atan((top - p.y) / r) - atan((bot - p.y) / r);
+        vec3 q = vec3(uCol.x, clamp(p.y, bot, top), uCol.z);
         ldir = normalize(q - p);
         return uFlameLightCol * uFlameLight * a / r;
       }

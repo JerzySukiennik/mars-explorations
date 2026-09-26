@@ -8,7 +8,11 @@ judged blind against real footage and published data (see "Realism bench").
 three.js r186 is vendored in `vendor/`; everything is plain ES modules with no
 build step.
 
-## Run
+## Play online
+
+https://mars.gzowo.fun (GitHub Pages, served from this branch; the `CNAME` file sets the custom domain and `.nojekyll` serves the files as-is).
+
+## Run locally
 
 ```sh
 npm run serve            # python3 -m http.server 8080
@@ -93,7 +97,7 @@ the keys of the current phase.
 
 | phase | keys |
 |---|---|
-| launch | `Enter` countdown, `W`/`S` throttle, `A`/`D` pitch trim, `Space` stage, `X` SECO, `G` auto-throttle, `U` autopilot, `C` tracking camera |
+| launch | `Enter` countdown, `W`/`S` throttle, `A`/`D` pitch trim, `Space` stage, `X` SECO, `G` auto-throttle, `U` autopilot, `C` camera: tracking (default; pans and zooms from the ground site like the webcast), chase, pad |
 | refill | `W`/`S` along-track, `A`/`D` cross-track, `R`/`F` radial thrust, `U` approach autopilot, `N` skip to next tanker, `Enter` depart |
 | transfer | `A`/`D` departure date, `W`/`S` flight time (then throttle), click the porkchop, `Enter` commit + ignite, `Space` relight, `X` cutoff, `G` auto cutoff, `T` TCM |
 | entry | `W`/`S` corridor, `Enter` entry interface, `A`/`D` bank (lift up / down), `U` bank guidance |
@@ -131,6 +135,7 @@ gameplay placement wins:
 | scene exposes | used by |
 |---|---|
 | `setFlightState(state)`, `setMissionTime(t)` | launch: altitude, speed, pitch, per-engine lit mask, staging, booster state |
+| `setCameraMode(mode)` | launch: `tracking`, `chase` or `fixed` (the benchmark shot framing) |
 | `stack` / `ship` (Object3D) | launch / landing: moved from the sim when no hook exists |
 | `setRefillState`, `ship` + `tanker` | refill relative position |
 | `setCruiseState`, `setEntryState`, `setLandingState` | transfer / entry / landing state each frame |

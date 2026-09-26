@@ -28,6 +28,12 @@ export async function create(game) {
   const stack = sceneObject(ctx, 'stack', 'ship');
   const stack0 = stack ? stack.position.clone() : null;
   const tracker = createTracker(THREE, ctx.camera);
+  // Scenes that can follow the vehicle themselves (setCameraMode) start on the
+  // webcast-style tracking camera; C cycles tracking -> chase -> pad view.
+  const CAM_MODES = ['tracking', 'chase', 'fixed'], CAM_NAMES = { tracking: 'TRACKING', chase: 'CHASE', fixed: 'PAD' };
+  const sceneCam = typeof ctx.setCameraMode === 'function';
+  let camIdx = 0;
+  if (sceneCam) hook(ctx, 'setCameraMode', CAM_MODES[camIdx]);
 
   let throttle = 1, trim = 0, autoThr = true, autopilot = auto;
   let resultAt = null;
@@ -39,7 +45,10 @@ export async function create(game) {
     if (autopilot && s.phase === 'prelaunch') Asc.stepAscent(s, 0, { start: true });
     if (input.wasPressed('KeyG')) { autoThr = !autoThr; game.toast(`Auto-throttle ${autoThr ? 'ON' : 'OFF'}`); }
     if (input.wasPressed('KeyU')) { autopilot = !autopilot; game.toast(`Autopilot ${autopilot ? 'ON' : 'OFF'}`); }
-    if (input.wasPressed('KeyC')) { tracker.set(tracker.mode === 'scene' ? 'track' : 'scene'); game.toast(`Camera: ${tracker.mode.toUpperCase()}`); }
+    if (input.wasPressed('KeyC')) {
+      if (sceneCam) { camIdx = (camIdx + 1) % CAM_MODES.length; hook(ctx, 'setCameraMode', CAM_MODES[camIdx]); game.toast(`Camera: ${CAM_NAMES[CAM_MODES[camIdx]]}`); }
+      else { tracker.set(tracker.mode === 'scene' ? 'track' : 'scene'); game.toast(`Camera: ${tracker.mode.toUpperCase()}`); }
+    }
     throttle = Math.max(0.4, Math.min(1, throttle + input.axis(['KeyS', 'ArrowDown'], ['KeyW', 'ArrowUp']) * 0.5 * dt));
     trim = Math.max(-10, Math.min(10, trim + input.axis(['KeyA', 'ArrowLeft'], ['KeyD', 'ArrowRight']) * 4 * dt));
     const stageCmd = input.wasPressed('Space') && s.phase === 'booster' && s.t > 30;
@@ -59,8 +68,10 @@ export async function create(game) {
     if (!hook(ctx, 'setFlightState', flight) && stack && !s.staged) {
       stack.position.y = stack0.y + Math.min(alt, 30000);
     }
-    if (tracker.mode === 'track' && stack) tracker.follow(stack, 180 + Math.min(alt, 30000) * 0.02);
-    if (s.phase === 'booster' && tracker.mode === 'scene' && stack && s.t > 6 && s.t < 7) tracker.set('track');
+    if (!sceneCam) {
+      if (tracker.mode === 'track' && stack) tracker.follow(stack, 180 + Math.min(alt, 30000) * 0.02);
+      if (s.phase === 'booster' && tracker.mode === 'scene' && stack && s.t > 6 && s.t < 7) tracker.set('track');
+    }
 
     if (tick(dt)) render(reserve);
 
@@ -124,7 +135,7 @@ export async function create(game) {
 
   return {
     update, sceneDt,
-    help: [['Enter', 'Start countdown'], ['W S', 'Throttle up / down'], ['A D', 'Pitch trim'], ['Space', 'Stage (hot staging)'], ['X', 'Manual SECO'], ['G', 'Auto-throttle on/off'], ['U', 'Autopilot on/off'], ['C', 'Camera: scene / tracking']],
+    help: [['Enter', 'Start countdown'], ['W S', 'Throttle up / down'], ['A D', 'Pitch trim'], ['Space', 'Stage (hot staging)'], ['X', 'Manual SECO'], ['G', 'Auto-throttle on/off'], ['U', 'Autopilot on/off'], ['C', 'Camera: tracking / chase / pad']],
     debug: () => ({ phase: s.phase, t: s.t, alt: Asc.altitude(s), speed: Asc.speedRel(s), shipProp: s.shipProp, booster: s.booster?.mode }),
   };
 }
