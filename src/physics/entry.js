@@ -87,7 +87,15 @@ export const STARSHIP_ENTRY = Object.freeze({
   alphaHyp: 62 * DEG,       // hypersonic trim angle of attack (belly-first; Starship flies ~60-70 deg). L/D ~0.5 here.
   alphaSub: 88 * DEG,       // subsonic belly-flop attitude
   noseRadius: STARSHIP_GEOM.noseRadius,
+  flapHyp: 0,               // hypersonic flap deflection (rad, - = folded toward the lee side)
 });
+
+/** Flap deflection vs Mach: hypersonic setting, opening to the belly-flop (0) between Mach 5 and 1. */
+export function flapSchedule(M, veh = STARSHIP_ENTRY) {
+  if (veh.flap != null) return veh.flap;
+  const f = M >= 5 ? 0 : M <= 1 ? 1 : (5 - M) / 4;
+  return (veh.flapHyp ?? 0) * (1 - f);
+}
 
 /** Angle-of-attack schedule vs Mach. */
 export function alphaSchedule(M, veh = STARSHIP_ENTRY) {
@@ -119,7 +127,7 @@ export function aeroState(planet, veh, h, v, alpha) {
   const s = planet.atm(h);
   const M = v / s.a;
   const Re1 = s.rho * v / viscosity(s.T, planet.gas);
-  const c = coefficients(alpha, M, Re1, { geom: veh.geom, g: shockLayerGamma(planet, v), flap: veh.flap ?? 0 });
+  const c = coefficients(alpha, M, Re1, { geom: veh.geom, g: shockLayerGamma(planet, v), flap: flapSchedule(M, veh) });
   const q = 0.5 * s.rho * v * v;
   const A = refArea(veh.geom);
   return { ...s, M, q, CL: c.CL, CD: c.CD, LD: c.LD, drag: q * c.CD * A / veh.mass, lift: q * c.CL * A / veh.mass };

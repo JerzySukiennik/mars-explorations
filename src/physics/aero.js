@@ -36,6 +36,7 @@ export const STARSHIP_GEOM = Object.freeze({
   flapArea: 70.0,         // m^2, 2 forward + 2 aft flaps (approx. 2x12 + 2x23 m^2)
   noseRadius: 4.5,        // m, windward effective radius used for stagnation heating
   wettedArea: 1450,       // m^2, for skin friction
+  roughness: 0.01,        // m, equivalent sand-grain height of the tiled belly (tile gaps/steps, chines, raceway)
 });
 
 /** Reference area (m^2): belly planform, cylinder barrel + tangent-ogive nose (2/3 D Ln). */
@@ -64,15 +65,24 @@ export function basePressureCp(M, g = 1.4, k = 0.57) {
   return -k * 2 / (g * M * M);
 }
 
-/** Subsonic cylinder drag coefficient vs Reynolds number (drag crisis). */
-export function subsonicCylinderCd(Re) {
+/**
+ * Subsonic cylinder drag coefficient vs Reynolds number (drag crisis), with
+ * surface roughness k/D. Smooth: subcritical 1.2 up to 2e5, crisis minimum
+ * ~0.3 at 5e5, transcritical recovery to ~0.7. Rough cylinders (Achenbach
+ * 1971; Achenbach & Heinecke 1981) have an earlier, shallower crisis and a
+ * higher transcritical plateau: ~0.9 at k/D 5e-4, ~1.0 at 1e-3, ~1.1 at 3e-3.
+ */
+export function subsonicCylinderCd(Re, kD = 0) {
   if (!(Re > 0)) return 1.2;
   const lr = Math.log10(Re);
-  // subcritical 1.2 up to 2e5, crisis minimum ~0.3 at 5e5, transcritical recovery to 0.7 above 3e6
-  if (lr <= 5.3) return 1.2;
-  if (lr <= 5.7) return 1.2 + (0.3 - 1.2) * (lr - 5.3) / 0.4;
-  if (lr <= 6.5) return 0.3 + (0.7 - 0.3) * (lr - 5.7) / 0.8;
-  return 0.7;
+  const rough = kD > 1e-5 ? Math.min(1, Math.max(0, (Math.log10(kD) + 5) / 2.5)) : 0; // 0 smooth .. 1 at k/D ~3e-3
+  const tc = kD > 1e-5 ? Math.min(1.15, Math.max(0.7, 1.0 + 0.25 * Math.log10(kD / 1e-3))) : 0.7;
+  const cmin = 0.3 + (tc - 0.05 - 0.3) * rough;       // crisis minimum fills in with roughness
+  const l1 = 5.3 - 0.5 * rough, l2 = 5.7 - 0.5 * rough, l3 = 6.5 - 0.7 * rough;
+  if (lr <= l1) return 1.2;
+  if (lr <= l2) return 1.2 + (cmin - 1.2) * (lr - l1) / (l2 - l1);
+  if (lr <= l3) return cmin + (tc - cmin) * (lr - l2) / (l3 - l2);
+  return tc;
 }
 
 const smooth = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
@@ -81,9 +91,9 @@ const smooth = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
  * Crossflow drag coefficient of a circular cylinder per unit projected area,
  * at crossflow Mach Mc and crossflow Reynolds number Re (based on diameter).
  */
-export function crossflowCd(Mc, Re, g = 1.4) {
+export function crossflowCd(Mc, Re, g = 1.4, kD = 0) {
   const sup = (M) => (2 / 3) * stagnationCp(M, g) - basePressureCp(M, g);
-  const sub = subsonicCylinderCd(Re);
+  const sub = subsonicCylinderCd(Re, kD);
   if (Mc >= 1) return sup(Mc);
   if (Mc <= 0.5) return sub;
   const f = smooth((Mc - 0.5) / 0.5);
@@ -121,7 +131,7 @@ export function coefficients(alpha, M, Re1 = 1e6, { geom = STARSHIP_GEOM, g = 1.
   const ReD = Re1 * D * Math.abs(sa);
   const Ab = Math.PI * D * D / 4;
   const eta = crossflowEta(L / D, Mc);
-  const cdc = crossflowCd(Mc, ReD, g);
+  const cdc = crossflowCd(Mc, ReD, g, (geom.roughness ?? 0) / D);
   const af = alpha + flap;
   const Mcf = M * Math.abs(Math.sin(af));
   const CNpot = Math.sin(2 * alpha) * Math.cos(alpha / 2) * Ab / Aref;

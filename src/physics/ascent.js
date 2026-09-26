@@ -139,7 +139,7 @@ export const FLIGHT_IFT5 = Object.freeze({
   ascentGuidance: {
     tVertical: 8, tKick: 10, kickDeg: 2.0,     // tower clearance, then a 2 deg pitch kick
     qTurn: 5e3,                                // Pa: start upper-atmosphere steering below this q (after max-Q)
-    stagingGammaDeg: 29,                       // Earth-relative flight-path angle at MECO (pitch rate shot to it)
+    stagingGammaDeg: 31,                       // Earth-relative flight-path angle at MECO (pitch rate shot to it)
     throttle: { qLimit: 24e3, qBand: 0.15, accelLimit: 2.2 * 9.80665, slewUp: 0.002, slewDown: 0.08, min: 0.4, max: 0.92 },
   },
   shipGuidance: {
@@ -149,8 +149,8 @@ export const FLIGHT_IFT5 = Object.freeze({
   },
   boosterReturn: {
     flipThrottle: 0.5,
-    boostbackPitchDeg: 3,             // nose-down boostback attitude (keeps the return apogee low)
-    throttleDownDistance: 40e3, throttleDownTau: 0.5, // 13 engines throttle back inside 40 km
+    boostbackPitchDeg: 0,             // boostback thrust horizontal (deg below horizontal)
+    throttleDownDistance: 100e3, throttleDownTau: 0.5, // 13 engines throttle back inside 100 km
     trimDistance: 12e3, trimThrottle: 0.5, // last 12 km of impact-point walk on 3 engines
     ignitionThrottle: 0.8,            // planned 13-engine throttle at landing-burn ignition (margin)
     gateSpeed: 60, gateAlt: 150,       // 13 -> 3 engine switch gate (m/s, m)
