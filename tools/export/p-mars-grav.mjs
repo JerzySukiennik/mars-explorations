@@ -8,13 +8,19 @@ import * as O from '../../src/physics/orbit.js';
 
 export function computeMarsGrav() {
   const r200 = MARS.rMean + 200e3;
-  const vc = O.measureCircularSpeed(MARS, r200);
+  // Circular speed / period at 200 km and escape speed are the planet's MEAN
+  // (spherically averaged) values, as quoted by fact sheets: the J2 term
+  // averages to zero over the sphere, so the circular orbit is propagated in
+  // the monopole field and the escape launch is made at MEAN_LAT, where the
+  // J2 potential vanishes (full two-body + J2 field). An equatorial orbit
+  // would instead feel the bulge (+0.13% speed, -0.25% period).
+  const vc = O.measureCircularSpeed(MARS, r200, { j2: false });
   const phobos = MARS.moons.phobos, deimos = MARS.moons.deimos;
   return {
     surface_g_ms2: O.measureSurfaceGravity(MARS, MARS.rEq),
-    escape_velocity_kms: O.measureEscapeVelocity(MARS, MARS.rMean) / 1e3,
+    escape_velocity_kms: O.measureEscapeVelocity(MARS, MARS.rMean, { lat: O.MEAN_LAT }) / 1e3,
     circular_speed_200km_kms: vc / 1e3,
-    period_200km_min: O.measureCircularPeriod(MARS, r200, { speed: vc }) / 60,
+    period_200km_min: O.measureCircularPeriod(MARS, r200, { speed: vc, j2: false }) / 60,
     phobos_period_h: O.measureCircularPeriod(MARS, phobos.a) / 3600,
     deimos_period_h: O.measureCircularPeriod(MARS, deimos.a) / 3600,
     sidereal_day_h: O.measureSiderealDay(MARS) / 3600,

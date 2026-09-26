@@ -46,3 +46,12 @@ test('Block 3 alternative is more capable', () => {
   const b3 = computeVehicleTable(V.CONFIGS.block3), b2 = computeVehicleTable(V.CONFIGS.block2);
   assert.ok(b3.liftoff_thrust_MN > b2.liftoff_thrust_MN);
 });
+
+test('ship vacuum delta-v uses RVac-only burn and beats a blended 6-engine burn', () => {
+  const s = V.SHIP;
+  const rvacOnly = V.stageVacuumDeltaV(s, 100e3);
+  const blended = V.stageDeltaV(s, { payload: 100e3, pa: 0 });
+  assert.ok(rvacOnly > blended);
+  const expect = V.ENGINES.raptor2Vac.ispVac * V.G0 * Math.log((s.dryMass + s.propMass + 100e3) / (s.dryMass + 100e3));
+  assert.ok(Math.abs(rvacOnly - expect) < 1e-6);
+});

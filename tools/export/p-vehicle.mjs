@@ -17,8 +17,9 @@ export function computeVehicleTable(config = V.CONFIGS[V.DEFAULT_CONFIG]) {
     raptor_sl_isp_s: V.isp(sl, V.P_SL),
     rvac_isp_s: V.isp(vac, 0),
     raptor_sl_thrust_kN: V.thrust(sl, V.P_SL) / 1000,
-    // all six ship engines firing in vacuum, 100 t payload
-    ship_dv_vac_100t_payload_ms: V.stageDeltaV(ship, { payload: 100e3, pa: 0 }),
+    // ship vacuum delta-v capability with 100 t payload: all propellant
+    // burned on the RVacs (SL Raptors off), rocket equation on the model's Isp
+    ship_dv_vac_100t_payload_ms: V.stageVacuumDeltaV(ship, 100e3),
     booster_full_throttle_burn_time_s: V.burnTime(booster, 1),
     ship_prop_mass_t: ship.propMass / 1000,
     booster_prop_mass_t: booster.propMass / 1000,

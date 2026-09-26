@@ -30,3 +30,17 @@ test('propagator conserves energy over 10 LEO revs (Earth, two-body)', () => {
 test('J2 regresses the node of a prograde Mars orbit', () => {
   assert.ok(O.measureNodalRate(MARS, MARS.rMean + 200e3, Math.PI / 4, { days: 1 }) < 0);
 });
+
+test('circular speed, period and escape speed imply one consistent GM', () => {
+  const r200 = MARS.rMean + 200e3;
+  const gmV = (ours.circular_speed_200km_kms * 1e3) ** 2 * r200;
+  const gmE = (ours.escape_velocity_kms * 1e3) ** 2 * MARS.rMean / 2;
+  const gmT = 4 * Math.PI ** 2 * r200 ** 3 / (ours.period_200km_min * 60) ** 2;
+  for (const gm of [gmV, gmE, gmT]) assert.ok(Math.abs(gm / MARS.mu - 1) < 3e-4, `GM ${gm}`);
+});
+
+test('nodal-rate orbit is shot to the requested mean radius', () => {
+  const r200 = MARS.rMean + 200e3;
+  const fit = O.nodalFit(MARS, r200, Math.PI / 4, { days: 1 });
+  assert.ok(fit.meanRadius < r200 - 3e3, 'starting at r200 sags below it under J2');
+});

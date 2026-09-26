@@ -271,3 +271,22 @@ export function stackLiftoff(config = CONFIGS[DEFAULT_CONFIG], payload = 0, pa =
   const F = stageThrust(booster, pa, 1);
   return { mass, thrust: F, tw: F / (mass * G0) };
 }
+
+/**
+ * Engine-group filter for an optimal vacuum burn: only the groups with the
+ * highest vacuum Isp fire (for Starship: the 3 RVacs; the short-nozzle SL
+ * Raptors, ~350 s in vacuum, are shut down since they would drag the
+ * cluster Isp down and are reserved for landing).
+ */
+export function bestVacuumGroups(stage) {
+  const best = Math.max(...stage.engines.map((g) => g.engine.ispVac));
+  return (g) => g.engine.ispVac >= best - 1e-9;
+}
+
+/**
+ * Stage vacuum delta-v capability (m/s) with a given payload, burning all
+ * propellant on the highest-Isp engines only (e.g. RVac-only ship burn).
+ */
+export function stageVacuumDeltaV(stage, payload = 0, propMass = stage.propMass) {
+  return stageDeltaV(stage, { payload, pa: 0, propMass, active: bestVacuumGroups(stage) });
+}

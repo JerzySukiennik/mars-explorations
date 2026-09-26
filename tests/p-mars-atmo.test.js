@@ -49,13 +49,34 @@ test('p-mars-atmo surface density / pressure / scale height scalars', () => {
 });
 
 test('structure is not a single exponential: scale height varies with altitude', () => {
+  const atm = A.DEFAULT_ATMOSPHERE;
+  // mean (wave-free) structure
+  const Hm = (z) => A.R_SPECIFIC * atm.meanTemperature(z * 1000) / A.gravity(z * 1000) / 1000;
+  assert.ok(Hm(0) > 11 && Hm(0) < 13, `H(0)=${Hm(0)}`);
+  assert.ok(Hm(70) < 9 && Hm(70) > 6.5, `H(70)=${Hm(70)}`);
+  assert.ok(Hm(0) - Hm(70) > 3);
+  assert.ok(atm.meanTemperature(0) - atm.meanTemperature(40e3) > 50);
+  assert.ok(Math.abs(atm.meanTemperature(60e3) - atm.meanTemperature(100e3)) < 15);
+});
+
+test('upper atmosphere carries wave structure (tides + gravity waves), not one straight exponential', () => {
+  // local scale height from the actual (wavy) temperature drifts by several km above 50 km
   const H = (z) => A.DEFAULT_ATMOSPHERE.scaleHeight(z * 1000) / 1000;
-  assert.ok(H(0) > 11 && H(0) < 13, `H(0)=${H(0)}`);
-  assert.ok(H(70) < 9 && H(70) > 6.5, `H(70)=${H(70)}`);
-  assert.ok(H(0) - H(70) > 3);
-  // temperature falls through the troposphere then flattens in the mesosphere
-  assert.ok(A.temperature(0) - A.temperature(40e3) > 50);
-  assert.ok(Math.abs(A.temperature(60e3) - A.temperature(100e3)) < 15);
+  const hs = []; for (let z = 50; z <= 125; z++) hs.push(H(z));
+  assert.ok(Math.max(...hs) - Math.min(...hs) > 1.5, `H range ${Math.min(...hs)}..${Math.max(...hs)}`);
+  // residual of log density about a straight line over 50-120 km: 5-40 % swings
+  const zs = [], ys = [];
+  for (let z = 50; z <= 120; z++) { zs.push(z); ys.push(Math.log(A.density(z * 1000))); }
+  const n = zs.length, mz = zs.reduce((a, b) => a + b) / n, my = ys.reduce((a, b) => a + b) / n;
+  const b = zs.reduce((a, z, i) => a + (z - mz) * (ys[i] - my), 0) / zs.reduce((a, z) => a + (z - mz) ** 2, 0);
+  const res = ys.map((y, i) => y - (my + b * (zs[i] - mz)));
+  const amp = Math.max(...res.map(Math.abs));
+  assert.ok(amp > 0.05 && amp < 0.4, `max |residual| ${amp}`);
+  // waves are switchable, and the smooth model is the mean
+  const smooth = A.createAtmosphere({ waves: false });
+  assert.equal(smooth.temperature(80e3), smooth.meanTemperature(80e3));
+  // temperature perturbation stays below the convective (breaking) limit of a few tens of K
+  for (let z = 0; z <= 130; z++) assert.ok(Math.abs(A.temperature(z * 1000) - A.DEFAULT_ATMOSPHERE.meanTemperature(z * 1000)) < 30);
 });
 
 test('hydrostatic balance and ideal gas hold', () => {

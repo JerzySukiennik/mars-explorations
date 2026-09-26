@@ -127,6 +127,8 @@ export function stateToElements(mu, { r, v }) {
 export const nodeLongitude = (s) => { const h = cross(s.r, s.v); return Math.atan2(h[0], -h[1]); };
 
 // ---------------------------------------------------------------- experiments
+/** Latitude where the J2 (P2) term of the potential vanishes: asin(1/sqrt 3). */
+export const MEAN_LAT = Math.asin(1 / Math.sqrt(3));
 // Angle swept in the orbit plane from r0 to r, in [0, 2pi).
 function sweptAngle(r0, hHat, r) {
   const ang = Math.atan2(dot(hHat, cross(r0, r)), dot(r0, r));
@@ -223,9 +225,10 @@ export function measureSurfaceGravity(body, radius = body.rEq, { tDrop = 2, dt =
  * propagated (adaptive RK4) for `horizon` seconds; it has escaped if it has
  * not fallen back to the launch radius by then.
  */
-export function escapes(body, radius, v, { horizon = 20000 * 86400, eta = 0.004, j2 = true } = {}) {
+export function escapes(body, radius, v, { horizon = 20000 * 86400, eta = 0.004, j2 = true, lat = 0 } = {}) {
   const acc = makeAccel(body, { j2 });
-  let s = { r: [radius, 0, 0], v: [v, 0, 0] }, t = 0;
+  const u = [Math.cos(lat), 0, Math.sin(lat)];
+  let s = { r: scale(u, radius), v: scale(u, v) }, t = 0;
   while (t < horizon) {
     const rn = norm(s.r);
     const dt = Math.min(eta * Math.sqrt(rn ** 3 / body.mu), horizon - t);
@@ -236,9 +239,15 @@ export function escapes(body, radius, v, { horizon = 20000 * 86400, eta = 0.004,
   return true;
 }
 
-/** Escape velocity (m/s) from `radius` by bisection on escapes(). */
+/**
+ * Escape velocity (m/s) from `radius` by bisection on escapes(), launching
+ * radially at latitude opts.lat (default 0 = equator). At the equator the J2
+ * bulge adds to the potential; the body's MEAN escape speed (the one fact
+ * sheets quote) is obtained at lat = asin(1/sqrt 3) (MEAN_LAT), where the
+ * degree-2 zonal term vanishes (P2(sin lat) = 0).
+ */
 export function measureEscapeVelocity(body, radius = body.rMean, opts = {}) {
-  const g = norm(gravityAccel(body, [radius, 0, 0], opts));
+  const g = norm(gravityAccel(body, [radius, 0, 0], { j2: opts.j2 }));
   let lo = Math.sqrt(g * radius), hi = 2 * lo;   // circular < escape < 2x circular
   for (let i = 0; i < 30; i++) {
     const mid = (lo + hi) / 2;
@@ -278,22 +287,44 @@ export function measureStationaryRadius(body, { j2 = true } = {}) {
 }
 
 /**
- * Secular nodal regression rate (rad/s) of a circular orbit of radius
- * `radius` and inclination `inc`: propagate `days` days and least-squares fit
- * the unwrapped osculating node longitude against time.
+ * Propagate a near-circular orbit started at its ascending node (radius r0,
+ * inclination inc, horizontal speed from the local gravity incl. J2) and
+ * least-squares fit the unwrapped osculating node longitude against time.
+ * Returns {rate (rad/s), meanRadius (time-averaged |r|, m)}.
  */
-export function measureNodalRate(body, radius, inc, { days = 5, dt = 5 } = {}) {
-  const v0 = Math.sqrt(norm(gravityAccel(body, [radius, 0, 0], { j2: false })) * radius);
-  const st = { r: [radius, 0, 0], v: [0, v0 * Math.cos(inc), v0 * Math.sin(inc)] };
-  let sx = 0, sy = 0, sxx = 0, sxy = 0, n = 0, prev = nodeLongitude(st), off = 0;
+export function nodalFit(body, r0, inc, { days = 5, dt = 5, j2 = true } = {}) {
+  const v0 = Math.sqrt(norm(gravityAccel(body, [r0, 0, 0], { j2 })) * r0);
+  const st = { r: [r0, 0, 0], v: [0, v0 * Math.cos(inc), v0 * Math.sin(inc)] };
+  let sx = 0, sy = 0, sxx = 0, sxy = 0, sr = 0, n = 0, prev = nodeLongitude(st), off = 0;
   propagate(body, st, days * 86400, dt, {
+    j2,
     onStep(t, s) {
       let om = nodeLongitude(s) + off;
       if (om - prev > Math.PI) { off -= 2 * Math.PI; om -= 2 * Math.PI; }
       if (om - prev < -Math.PI) { off += 2 * Math.PI; om += 2 * Math.PI; }
       prev = om;
-      sx += t; sy += om; sxx += t * t; sxy += t * om; n++;
+      sx += t; sy += om; sxx += t * t; sxy += t * om; sr += norm(s.r); n++;
     },
   });
-  return (n * sxy - sx * sy) / (n * sxx - sx * sx);
+  return { rate: (n * sxy - sx * sy) / (n * sxx - sx * sx), meanRadius: sr / n };
+}
+
+/**
+ * Secular nodal regression rate (rad/s) of a near-circular orbit whose MEAN
+ * orbital radius (time-averaged |r| over the propagation) is `radius`, at
+ * inclination `inc`. An orbit started at the node with r0 = radius does not
+ * stay there: the J2 bulge perturbs it and its mean radius sits several km
+ * lower (for Mars at 200 km, 45 deg: ~7 km), which would overstate the
+ * regression by ~0.8%. So r0 is shot (secant) until the propagated mean
+ * radius equals the requested one, then the node drift is fitted.
+ */
+export function measureNodalRate(body, radius, inc, { days = 5, dt = 5, j2 = true } = {}) {
+  const err = (r0) => nodalFit(body, r0, inc, { days, dt, j2 });
+  let r0 = radius, f0 = err(r0);
+  let r1 = radius + (radius - f0.meanRadius), f1 = err(r1);
+  for (let i = 0; i < 20 && Math.abs(f1.meanRadius - radius) > 1; i++) {
+    const r2 = r1 - (f1.meanRadius - radius) * (r1 - r0) / (f1.meanRadius - f0.meanRadius);
+    r0 = r1; f0 = f1; r1 = r2; f1 = err(r1);
+  }
+  return f1.rate;
 }
