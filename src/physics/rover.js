@@ -48,7 +48,7 @@ export const ROVER = Object.freeze({
   wheels: 6,
   wheelRadius_m: 0.2635,
   topSpeed_m_s: 0.042,             // wheel rim speed limit on flat hard ground
-  crr: 0.10,                       // rolling resistance, loose regolith over rock
+  crr: 0.15,                       // rolling resistance (Bekker-type, loose regolith)
   driveEfficiency: 0.22,           // motor x planetary/harmonic gear at cold temp
   steerAvg_W: 10,                  // steering actuators averaged over a drive
   brakeRelease_W: 20,              // wheel/steer brakes held open while moving
@@ -315,7 +315,7 @@ export const LOADS = Object.freeze({
   sleepBase_W: 44,               // power electronics, clocks, HRS pump, RTC
   survivalSetpoint_K: 233,       // electronics / battery keep-warm (-40 C)
   survivalGain_W_per_K: 0.35,
-  awakeAvionics_W: 150,          // RCE + bus + telecom idle while awake
+  awakeAvionics_W: 110,          // added when awake: RCE, avionics, telecom idle
   actuatorSetpoint_K: 218,       // -55 C minimum operating for gearboxes
   actuatorGain_W_per_K: 3.0,
   actuatorHeaterMax_W: 150,
@@ -337,7 +337,7 @@ const actuatorHeater = (Tair, L = LOADS) =>
 export function activityLoad(mode, Tair, drive = null, L = LOADS, r = ROVER) {
   const sleep = L.sleepBase_W + survivalHeater(Tair, L);
   if (mode === 'sleep') return sleep;
-  const awake = sleep + L.awakeAvionics_W - L.sleepBase_W * 0.3; // some sleep loads fold into avionics
+  const awake = sleep + L.awakeAvionics_W;
   switch (mode) {
     case 'wake': return awake;
     case 'uhf': return awake + L.uhfTx_W;
@@ -357,8 +357,8 @@ export function activityLoad(mode, Tair, drive = null, L = LOADS, r = ROVER) {
 }
 
 /** Highest load the model can command: coring with the arm, caching system,
- * X-band, cameras and remote science all on, at the coldest air temperature
- * of the default climate (actuator heaters saturate there). */
+ * X-band, cameras and remote science all on, in a cold worst case (150 K air)
+ * where the survival and actuator heaters are at their limits. */
 export function peakLoad(L = LOADS, Tair = 150) {
   return activityLoad('coring', Tair, null, L);
 }
@@ -376,6 +376,7 @@ export const DRIVE_SOL_PLAN = Object.freeze([
   { at: 11.15, mode: 'imaging', dur: 0.20 },   // pre-drive imaging
   { at: 11.35, mode: 'drive', distance_m: 270, maxDur: 3.0 },
   { mode: 'imaging', dur: 0.55 },              // post-drive workspace/mosaic
+  { mode: 'remote', dur: 0.75 },               // post-drive remote sensing / atmospheric obs
   { mode: 'uhf', dur: 0.35 },                  // afternoon relay pass
   { at: 20.40, mode: 'uhf', dur: 0.40 },       // evening relay pass
 ]);
