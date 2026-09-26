@@ -1,2 +1,5 @@
 node_modules/
 work/
+# SpaceX webcast frames: used locally as blind references only; licence unclear, not redistributed. See refs/real/MANIFEST.json for sources.
+refs/real/ship_*/
+refs/real/booster/

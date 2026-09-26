@@ -1,0 +1,54 @@
+{
+  "_comment": "Tolerances for piece p-mars-atmo, compared against p-mars-atmo.real.csv (Viking 1 Lander entry profile, Seiff & Kirk 1977, NASA PDS Atmospheres Node). Altitude is km above the Viking-era Mars reference surface (the ~6.1 mbar areoid), not the MOLA areoid; the VL1 landing site sits at -1.49 km on this scale (about -3.6 km MOLA). Density and pressure use relative tolerances because they span 7 orders of magnitude; the equivalent log10 bound is also given. The bands are wide because one entry profile is one time and place: Viking 2 (landed 1976-09-03, 48N) differs from Viking 1 (1976-07-20, 22N) by 0.68-1.01x in density over 30-110 km, and later entries (Pathfinder 1997, MSL 2012) differ by up to about 2x above 60 km (tides, season, dust).",
+  "density_kgm3": {
+    "value": null,
+    "tol_rel": 0.35,
+    "tol_log10": 0.15,
+    "bands": [
+      {"alt_km": [0, 30], "tol_rel": 0.35, "tol_log10": 0.15, "why": "Surface pressure varies about +/-12% seasonally (CO2 cycle, Viking lander barometers). The shift between the Viking datum and the MOLA datum (~2 km) changes density by ~18% at H~11 km. Below 25 km the VL1 data are sparse parachute-phase points."},
+      {"alt_km": [30, 80], "tol_rel": 0.5, "tol_log10": 0.2, "why": "VL2/VL1 density ratio here is 0.73-1.01. Later entries fall inside a ~1.5x envelope."},
+      {"alt_km": [80, 130], "tol_rel": 1.0, "tol_log10": 0.3, "why": "VL2/VL1 ratio is 0.68-0.88. Thermal tides and seasonal inflation of the upper atmosphere give roughly 2x variation between entries. Accelerometer noise is large above ~110 km. 121-129 km is log-interpolated between the accelerometer's top (120.19 km) and UAMS at 130 km."}
+    ],
+    "source_url": "https://atmos.nmsu.edu/data_and_services/atmospheres_data/MARS/viking/entry_profiles.html",
+    "note": "Pass if |sim/real - 1| <= tol_rel for the band (or |log10(sim/real)| <= tol_log10). Compare on log scale."
+  },
+  "pressure_Pa": {
+    "value": null,
+    "tol_rel": 0.35,
+    "bands": [
+      {"alt_km": [0, 30], "tol_rel": 0.35},
+      {"alt_km": [30, 80], "tol_rel": 0.5},
+      {"alt_km": [80, 130], "tol_rel": 1.0}
+    ],
+    "source_url": "https://atmos.nmsu.edu/data_and_services/atmospheres_data/MARS/viking/entry_profiles.html",
+    "note": "Source gives pressure in mbar; the CSV converts it to Pa (x100). Pressure comes from hydrostatic integration of the measured density, so it carries the same spread as density."
+  },
+  "temperature_K": {
+    "value": null,
+    "tol_abs": 30,
+    "bands": [
+      {"alt_km": [0, 40], "tol_abs": 25, "why": "VL1 vs VL2 differ by <=10 K at 30-40 km. The diurnal range near the surface is much larger (~50-60 K at the ground), but the entry profile is late afternoon."},
+      {"alt_km": [40, 130], "tol_abs": 40, "why": "VL1 shows ~+/-15 K wave structure (tides/gravity waves) that a smooth model will not reproduce. VL2 differs by up to 43 K at 105-110 km, and Pathfinder was ~20-30 K colder near 80 km."}
+    ],
+    "source_url": "https://atmos.nmsu.edu/data_and_services/atmospheres_data/MARS/viking/entry_profiles.html",
+    "note": "A smooth model is expected to track the mean trend (~230 K near 0 km falling to ~140-150 K at 60-120 km), not the wave structure."
+  },
+  "surface_density_kgm3_at_0km": {
+    "value": 0.0151,
+    "tol_rel": 0.35,
+    "source_url": "https://atmos.nmsu.edu/data_and_services/atmospheres_data/MARS/viking/entry_profiles.html",
+    "note": "VL1 value at z=0 (parachute-phase point at 0.133 km: 0.01498; at the landing site z=-1.49 km: 0.0168). The commonly quoted global-mean surface density is ~0.020 kg/m3 (NASA Mars Fact Sheet), which is inside the tolerance only at its edge, because it refers to the mean datum/season."
+  },
+  "surface_pressure_Pa_at_0km": {
+    "value": 670.7,
+    "tol_rel": 0.2,
+    "source_url": "https://atmos.nmsu.edu/data_and_services/atmospheres_data/MARS/viking/entry_profiles.html",
+    "note": "VL1 6.707 mbar at z=0.01 km (7.62 mbar at the landing site). The NASA Mars Fact Sheet global mean is 636 Pa (6.36 mbar), 5% lower; both pass."
+  },
+  "scale_height_km_0_20km": {
+    "value": 11.7,
+    "tol_abs": 1.5,
+    "source_url": "https://atmos.nmsu.edu/planetary_datasets/mars_temppres.html",
+    "note": "Viking 1 near-surface pressure scale height H0 = 11.697 km (Seiff & Kirk 1977 Table II note; VL2 11.363 km). The density e-folding over 0-20 km in the CSV is ~12.0 km. The NASA fact sheet gives 11.1 km."
+  }
+}

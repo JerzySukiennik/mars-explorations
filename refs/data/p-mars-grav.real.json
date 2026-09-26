@@ -1,0 +1,11 @@
+{
+  "surface_g_ms2": 3.71,
+  "escape_velocity_kms": 5.027,
+  "circular_speed_200km_kms": 3.454,
+  "period_200km_min": 108.82,
+  "phobos_period_h": 7.6538,
+  "deimos_period_h": 30.2986,
+  "sidereal_day_h": 24.6230,
+  "areostationary_radius_km": 20428,
+  "j2_nodal_precession_200km_deg_per_day": -8.87
+}

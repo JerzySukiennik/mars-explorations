@@ -1,0 +1,10 @@
+{
+  "regolith_bulk_density_kgm3": 1211,
+  "extrusion_rate_kg_per_h": 1628,
+  "energy_per_kg_kWh": 0.0098,
+  "printer_power_kW": 16,
+  "landing_pad_10m_diam_20cm_mass_t": 19.02,
+  "landing_pad_print_time_h": 17.0,
+  "sintering_energy_per_kg_kWh": 7.0,
+  "polymer_part_rate_g_per_h": 54
+}

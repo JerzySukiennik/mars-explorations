@@ -1,0 +1,87 @@
+{
+  "_comment": "Tolerances for piece p-rover, compared against p-rover.real.csv (a representative Perseverance drive-sol battery SOC timeline at 15-min cadence; time_h is Earth hours since local midnight, one sol = 24.66 h). IMPORTANT: no downlinked SOC telemetry trace was publicly accessible (JPL/NTRS/IEEE hosts are blocked from this sandbox, and JPL does not release battery telemetry to PDS). The CSV is BUDGETED: it integrates published NASA/JPL power figures (MMRTG output and diurnal range, battery capacity, sleep/awake/drive loads) over a representative drive-sol activity schedule. The endpoints (power and capacity numbers) are published; the timing and exact load levels are a model, so the SOC tolerances are loose and are about shape and energy balance, not point-by-point values.",
+  "battery_soc_pct": {
+    "value": null,
+    "tol_abs": 15,
+    "source_url": "https://www.jpl.nasa.gov/news/press_kits/mars_2020/landing/mission/spacecraft/power",
+    "note": "Pass if the sim SOC is within +/-15 percentage points of the reference at each time. It is loose because the schedule is budgeted, not measured. The shape checks that matter: (1) SOC rises overnight while sleep load (45-70 W) is below the MMRTG (~110 W), about +2%/h on a 2408 Wh pack; (2) SOC falls steeply during the drive: net about -290 W, or -12%/h, so a 2.5 h drive costs about 25-35 points; (3) it recovers slowly (+2 to +2.5%/h) after the drive; (4) a drive sol ends net-negative by about 5-20 points, which is why Curiosity blogs describe recharge sols after power-hungry sols. The sim should never exceed 100% and should never go below 0 on a nominal sol."
+  },
+  "soc_drop_during_drive_pct": {
+    "value": 24.3,
+    "tol_abs": 10,
+    "source_url": "https://www.planetary.org/articles/0514-book-excerpt-curiosity-mmrtg",
+    "note": "Reference: 74.2% at 11.75 h to 49.9% at 13.75 h. This is 2 h of driving at 400 W total load against about 107 W MMRTG, on a 2 x 43 Ah x 28 V = 2408 Wh pack. The drive load is budgeted from the published 'up to 500 W while driving' (Curiosity) and '<200 W' for the M2020 mobility motors plus the >=150 W awake avionics baseline. +/-10 points covers a 300-500 W drive load."
+  },
+  "sol_net_soc_change_pct": {
+    "value": -12.2,
+    "tol_abs": 10,
+    "source_url": "https://www.planetary.org/articles/0514-book-excerpt-curiosity-mmrtg",
+    "note": "Reference: 75.0 -> 62.8 over the sol. The MMRTG gives about 2.5-2.7 kWh/sol (published 'about 2.5 kWh per sol'; 110 W x 24.66 h = 2.71 kWh). The budgeted drive-sol load is about 2.99 kWh. Pass if the sim drive sol is net negative within -2 to -22 points."
+  },
+  "mmrtg_power_W": {
+    "value": 110,
+    "tol_abs": 8,
+    "source_url": "https://www.jpl.nasa.gov/news/press_kits/mars_2020/launch/mission/spacecraft/power/",
+    "note": "M2020 press kit: 'about 110 W at the start of the mission'. Curiosity measured about 114 W at landing, ranging 109-119 W over a sol (Manning & Simon 2017), so there is a +/-5 W diurnal swing. The reference uses 110 +/- 5 W with the maximum pre-dawn. Tolerance of +/-8 W covers the diurnal swing plus unit-to-unit spread (MMRTG design BOL is ~110-125 W in various NASA pages). A sim that holds a constant 110 W passes."
+  },
+  "mmrtg_decay_W_per_sol": {
+    "value": 0.0125,
+    "tol_rel": 0.5,
+    "source_url": "https://www.planetary.org/articles/0514-book-excerpt-curiosity-mmrtg",
+    "note": "Curiosity measured decay is 'roughly 1 W per 80 sols', close to linear (thermocouple degradation plus Pu-238 decay). That is about 4.6 W per Earth year, or about 4%/yr at 110 W, consistent with the M2020 press kit's 'a few percent every year'. Pu-238 decay alone (87.7 yr half-life) would give only about 0.8%/yr. The tolerance is +/-50% because of M2020-vs-MSL unit differences; a sim using Pu-only decay fails."
+  },
+  "load_W_sleep": {
+    "value": 57.5,
+    "tol_abs": 15,
+    "source_url": "https://www.planetary.org/articles/0514-book-excerpt-curiosity-mmrtg",
+    "note": "Curiosity published '45 to 70 W while sleeping'. The reference uses 60 W at night and 50 W by day. Pass if the sim sleep load is within 42-72 W."
+  },
+  "load_W_awake_min": {
+    "value": 150,
+    "tol_abs": 30,
+    "source_url": "https://www.planetary.org/articles/0514-book-excerpt-curiosity-mmrtg",
+    "note": "Curiosity published 'at least 150 W whenever it is awake'. The reference uses awake non-drive loads of 180-250 W."
+  },
+  "load_W_drive": {
+    "value": 400,
+    "tol_abs": 150,
+    "source_url": "https://www.planetary.org/articles/0514-book-excerpt-curiosity-mmrtg",
+    "note": "Published Curiosity maximum is 'up to 500 W while driving'. M2020 mobility motors draw '<200 W' (NASA rover-components page), on top of an awake baseline of >=150 W. So the realistic total drive load is about 300-500 W; the reference uses 400. It is wide because no measured drive-load trace is public."
+  },
+  "load_W_peak": {
+    "value": 900,
+    "tol_abs": 100,
+    "source_url": "https://www.jpl.nasa.gov/news/press_kits/mars_2020/landing/mission/spacecraft/power",
+    "note": "M2020 press kit: 'power demand can reach 900 W during science activities'. The sim should never command a load above about 1000 W. The drive sol in the CSV does not reach it."
+  },
+  "battery_capacity_Ah_each": {
+    "value": 43,
+    "tol_abs": 1,
+    "source_url": "https://www.jpl.nasa.gov/news/press_kits/mars_2020/landing/mission/spacecraft/power",
+    "note": "M2020: two Li-ion batteries of about 43 Ah each (26.5 kg total). Curiosity is rated 42 Ah each (Manning & Simon), 8-cell Yardney batteries (JPL Li-ion testing report). The tolerance is tight because it is a design number."
+  },
+  "battery_energy_Wh_total": {
+    "value": 2408,
+    "tol_rel": 0.1,
+    "source_url": "https://www.nasa.gov/wp-content/uploads/2024/01/performacne-testing-of-li-ion-cells-and-batteries-at-jpl-in-support-of-present-and-future-nasa-mission.pdf",
+    "note": "2 x 43 Ah x 28 V nominal (8 cells in series at ~3.5-3.6 V gives 28-28.8 V). +/-10% covers the nominal-voltage choice (28 vs 28.8 V gives 2408 vs 2477 Wh) and 42 vs 43 Ah."
+  },
+  "top_speed_cm_s": {
+    "value": 4.2,
+    "tol_abs": 0.2,
+    "source_url": "https://science.nasa.gov/mission/mars-2020-perseverance/rover-components/",
+    "note": "Published top speed on flat hard ground is 4.2 cm/s = 152 m/h (less than 0.1 mph), for both MSL and M2020. The tolerance is tight because it is a hard design number."
+  },
+  "autonav_avg_rate_m_per_h": {
+    "value": 110,
+    "tol_abs": 30,
+    "source_url": "https://www.science.org/doi/10.1126/scirobotics.adi3099",
+    "note": "Published AutoNav rates: 'about 100 m/h' (Verma et al. 2023 Sci. Robotics coverage) up to '120 m/h' for enhanced AutoNav. The single-sol record is 347.7 m (sol 753), and 411.7 m in about 4 h 24 min on sol 1540 (93.5 m/h average including stops). Pass if the sim AutoNav average rate is 80-140 m/h and never exceeds 152 m/h."
+  },
+  "max_drive_m_per_sol": {
+    "value": 411.7,
+    "tol_rel": 0.25,
+    "source_url": "https://www.jpl.nasa.gov/images/pia26645-nasas-perseverance-breaks-own-rover-driving-record/",
+    "note": "Perseverance single-sol record is 411.7 m (sol 1540, 19 Jun 2025), after the earlier 347.7 m (sol 753). A sim drive sol at the same time budget (~4.4 h) should give 350-500 m, not kilometres."
+  }
+}

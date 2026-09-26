@@ -1,0 +1,12 @@
+{
+  "hohmann_dv_leo_tmi_kms": 3.59,
+  "hohmann_tof_days": 258.9,
+  "c3_min_2026_km2s2": 9.18,
+  "tof_2026_days": 292.3,
+  "leo_tmi_dv_2026_kms": 3.61,
+  "vinf_arrival_2026_kms": 2.72,
+  "mars_entry_speed_2026_kms": 5.63,
+  "c3_min_2028_km2s2": 8.99,
+  "c3_min_2031_km2s2": 8.17,
+  "synodic_period_days": 779.9
+}

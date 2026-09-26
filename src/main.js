@@ -17,6 +17,7 @@ const SCENES = {
   entry: () => import('./scenes/entry.js'),
   landing: () => import('./scenes/landing.js'),
   surface: () => import('./scenes/surface.js'),
+  onboard: () => import('./scenes/onboard.js'),
 };
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: !!shotId, powerPreference: 'high-performance' });
