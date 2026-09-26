@@ -45,8 +45,8 @@ vec3 skyColor(vec3 dir){
   float lobe = exp(-pow((az - 0.03) / 0.21, 2.)) * .85 + .15 * smoothstep(-.35, .45, az);
   vec3 top  = vec3(.205, .235, .268);
   vec3 mid  = vec3(.262, .268, .280);
-  vec3 warm = mix(vec3(.225, .188, .178), vec3(.385, .268, .205), lobe);
-  vec3 bank = mix(vec3(.100, .112, .130), vec3(.225, .158, .135), lobe);
+  vec3 warm = mix(vec3(.205, .176, .170), vec3(.41, .275, .205), lobe);
+  vec3 bank = mix(vec3(.086, .097, .112), vec3(.235, .160, .135), lobe);
   vec3 c = mix(mid, top, smoothstep(5.0, 9.5, e));
   c = mix(c, warm, exp(-pow((e - 2.9) / 1.55, 2.)) * .96);
   c = mix(c, bank, smoothstep(1.9, 0.25, e));

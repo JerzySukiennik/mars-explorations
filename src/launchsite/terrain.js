@@ -75,7 +75,7 @@ export function makeTerrain(THREE, { camPos, sunDir, sunCol, skyIrr, flamePos, f
         vec3 albedo; float water = 0.;
         vec3 col;
         // ---------------- land classification ----------------
-        float beachW = 26. + 8. * vnoise2(vec2(s / 400., 3.));
+        float beachW = 13. + 5. * vnoise2(vec2(s / 400., 3.));
         float duneW = 260. + 220. * fbm2f(vec2(s / 1300., 7.), fp / 1300., 3);
         float dune = smoothstep(-beachW, -beachW - 10., dx) * (1. - smoothstep(-duneW, -duneW - 60., dx));
         vec2 q = p + 700. * vec2(fbm2f(p / 2600. + 3.1, fp / 2600., 3) - .5, fbm2f(p / 2600. + 9.7, fp / 2600., 3) - .5);
@@ -100,10 +100,10 @@ export function makeTerrain(THREE, { camPos, sunDir, sunCol, skyIrr, flamePos, f
         float lev = abs(fbm2f(q * vec2(1. / 800., 1. / 3000.) + 2.2, fp / 800., 5) - .5);
         float levee = (1. - smoothstep(.010, .022, lev)) * bay;
         water *= 1. - levee;
-        vec3 marsh = mix(vec3(.024, .023, .012), vec3(.042, .037, .019), vnoise2(p / 140.));
+        vec3 marsh = mix(vec3(.024, .022, .009), vec3(.040, .035, .014), vnoise2(p / 140.));
         vec3 bare = mix(vec3(.26, .215, .175), vec3(.36, .30, .25), vnoise2(p / 220.));
         vec3 duneC = mix(vec3(.075, .055, .034), vec3(.11, .080, .050), vnoise2(p / 90.));
-        vec3 beachC = mix(vec3(.10, .09, .075), vec3(.20, .18, .15), smoothstep(-beachW, -8., dx));
+        vec3 beachC = mix(vec3(.20, .18, .15), vec3(.09, .08, .068), smoothstep(-beachW * .45, -2., dx));
         float bareMix = flats * smoothstep(.36, .46, wet + .08 * vnoise2(p / 300.));
         albedo = mix(marsh, bare, bareMix);
         albedo = mix(albedo, duneC, dune);
@@ -112,6 +112,9 @@ export function makeTerrain(THREE, { camPos, sunDir, sunCol, skyIrr, flamePos, f
         float padD = length(p);
         albedo = mix(albedo, vec3(.30, .29, .27), 1. - smoothstep(90., 110., padD));
         water *= smoothstep(140., 260., padD);
+        float mainland = smoothstep(11000., 14000., s + 2500. * (wf - .5)) * smoothstep(-500., -2500., p.x);
+        water *= 1. - mainland;
+        albedo = mix(albedo, marsh * 1.3, mainland);
         float lag = spi * smoothstep(-900., -1000., dx);
         water = max(water * (1. - spi), lag);
         isSea = max(isSea, pass);
@@ -134,9 +137,9 @@ export function makeTerrain(THREE, { camPos, sunDir, sunCol, skyIrr, flamePos, f
           // wind sea: facets tilted ~8 deg on average -> effective incidence well
           // below grazing, reflecting sky from a few degrees up
           // swell crests run parallel to the shore (long in s, short across)
-          float sw = vnoise2(vec2(dx / 22., s / 260.)) * .65 + vnoise2(vec2(dx / 9., s / 110.)) * .35;
+          float sw = vnoise2(vec2(dx / 30., s / 420.)) * .7 + vnoise2(vec2(dx / 11., s / 160.)) * .3;
           float lod = smoothstep(.2, 2.5, fp / 6.);
-          float slope = (sw - .5) * .09 * (1. - lod * .5);
+          float slope = (sw - .5) * .07 * (1. - lod * .5);
           float ci = clamp(cosi + .115 + slope, 0., 1.);
           float Fs = .02 + .98 * pow(1. - ci, 5.);
           vec3 Rs = normalize(vec3(R.x, max(R.y, 0.) + .03 + max(slope, 0.) * .5, R.z));
@@ -149,7 +152,7 @@ export function makeTerrain(THREE, { camPos, sunDir, sunCol, skyIrr, flamePos, f
             float w = 5. + 7. * vnoise2(vec2(s / 60., float(i)));
             br += (1. - smoothstep(0., w, abs(dx - lineD))) * smoothstep(.3, .75, vnoise2(vec2(s / 70. + float(i) * 3.3, 1.7))) * (1. - float(i) * .18) * .75;
           }
-          br += surf * .35 * smoothstep(.45, .8, vnoise2(vec2(dx / 14., s / 90.)));
+          br += surf * .45 * smoothstep(.62, .85, vnoise2(vec2(dx / 6., s / 45.))) + surf * .15 * vnoise2(vec2(dx / 25., s / 200.));
           br += (1. - smoothstep(0., 10., dx)) * .8;   // swash
           br *= 1. - smoothstep(10., 80., fpx) * .6;
           vec3 foamC = vec3(.62, .60, .58) / 3.1416 * E;

@@ -101,8 +101,8 @@ export async function create({ THREE, renderer, params }) {
     uSunDir: { value: sunDir }, uSunCol: { value: sunCol }, uSkyIrr: { value: skyIrr },
     uBlob: { value: blobs.c }, uBlobR: { value: blobs.r },
     uCol: { value: colBase }, uFlameCol: { value: new THREE.Vector3(1.0, .075, .016) }, uFlameI: { value: 12 },
-    uFlameLight: { value: 330 }, uFlameLightCol: { value: flameLightCol },
-    uHazeS: { value: 1 / 15000 }, uHazeH: { value: 420 }, uCloudSun: { value: new THREE.Vector3(2.6, .95, .13) }, uCloudSigma: { value: .30 },
+    uFlameLight: { value: 620 }, uFlameLightCol: { value: flameLightCol },
+    uHazeS: { value: 1 / 15000 }, uHazeH: { value: 420 }, uCloudSun: { value: new THREE.Vector3(3.2, 1.25, .16) }, uCloudSigma: { value: .30 },
   };
   const compMat = makeCompositeMaterial(THREE, cu);
   const fsScene = new THREE.Scene(); const fsQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), compMat); fsScene.add(fsQuad);
