@@ -1,0 +1,12 @@
+{
+  "stack_liftoff_mass_t": 5275,
+  "liftoff_thrust_MN": 74.43,
+  "liftoff_TW": 1.439,
+  "raptor_sl_isp_s": 327,
+  "rvac_isp_s": 380,
+  "raptor_sl_thrust_kN": 2255.5,
+  "ship_dv_vac_100t_payload_ms": 7975,
+  "booster_full_throttle_burn_time_s": 146.5,
+  "ship_prop_mass_t": 1500,
+  "booster_prop_mass_t": 3400
+}

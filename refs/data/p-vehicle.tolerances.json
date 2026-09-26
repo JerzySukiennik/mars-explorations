@@ -1,0 +1,62 @@
+{
+  "stack_liftoff_mass_t": {
+    "value": 5275,
+    "tol_rel": 0.06,
+    "source_url": "https://en.wikipedia.org/wiki/SpaceX_Starship",
+    "note": "Derived: booster dry 275 t + booster prop 3400 t + ship dry ~100 t + ship prop 1500 t (no payload). Published figures range ~5000 t (SpaceX 'about 5000 t') to 5500 t (Flight 7 reporting incl. hot-stage ring/payload); ship dry quoted 85-120 t. 6% band spans 4960-5590 t."
+  },
+  "liftoff_thrust_MN": {
+    "value": 74.43,
+    "tol_rel": 0.03,
+    "source_url": "https://www.spacex.com/vehicles/starship/",
+    "note": "33 x Raptor 2 @ 230 tf = 7590 tf = 74.43 MN (SpaceX site value). Wikipedia lists 73.5 MN max for Block 1/2; 3% covers both."
+  },
+  "liftoff_TW": {
+    "value": 1.439,
+    "tol_abs": 0.1,
+    "source_url": "https://www.spacex.com/vehicles/starship/",
+    "note": "7590 tf / stack mass. Liftoff mass uncertainty (5000-5500 t) gives 1.38-1.52; +/-0.1 absolute."
+  },
+  "raptor_sl_isp_s": {
+    "value": 327,
+    "tol_abs": 3,
+    "source_url": "https://en.wikipedia.org/wiki/SpaceX_Raptor",
+    "note": "Raptor 2 sea-level Isp 327 s widely cited; SpaceX has not published an exact number; +/-3 s."
+  },
+  "rvac_isp_s": {
+    "value": 380,
+    "tol_abs": 5,
+    "source_url": "https://en.wikipedia.org/wiki/SpaceX_Raptor",
+    "note": "RVac Isp ~380 s (some sources 378); +/-5 s."
+  },
+  "raptor_sl_thrust_kN": {
+    "value": 2255.5,
+    "tol_rel": 0.02,
+    "source_url": "https://www.spacex.com/vehicles/starship/",
+    "note": "SpaceX: Raptor 2 = 230 tf (2255.5 kN). Tight: this is an official SpaceX number."
+  },
+  "ship_dv_vac_100t_payload_ms": {
+    "value": 7975,
+    "tol_abs": 600,
+    "source_url": "https://en.wikipedia.org/wiki/SpaceX_Starship",
+    "note": "Rocket eq. Isp 380 s, m0 = 100 dry + 1500 prop + 100 payload, mf = 200 t -> ~7975 m/s. Ship dry 85-120 t and blended Isp (3 SL Raptors ~350 s vac + 3 RVac) move this 7500-8300 m/s; +/-600 m/s."
+  },
+  "booster_full_throttle_burn_time_s": {
+    "value": 146.5,
+    "tol_rel": 0.15,
+    "source_url": "https://www.spacex.com/vehicles/starship/",
+    "note": "3400 t / (33 x 2255.5 kN / (327 s x g0)) = ~146.5 s (all prop, full throttle). Real flights MECO at ~155-165 s with throttling and boostback reserve (IFT telemetry); 15% band."
+  },
+  "ship_prop_mass_t": {
+    "value": 1500,
+    "tol_rel": 0.05,
+    "source_url": "https://en.wikipedia.org/wiki/SpaceX_Starship",
+    "note": "Block 2 ship propellant 1500 t (SpaceX/Wikipedia; Block 1 was 1200 t). 5%."
+  },
+  "booster_prop_mass_t": {
+    "value": 3400,
+    "tol_rel": 0.05,
+    "source_url": "https://www.spacex.com/vehicles/starship/",
+    "note": "Super Heavy Block 1/2 propellant 3400 t (SpaceX site). 5%."
+  }
+}

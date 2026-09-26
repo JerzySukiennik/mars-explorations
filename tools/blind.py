@@ -2,6 +2,7 @@
 """Build a blind A/B pair for the critic.
 
 Images:  blind.py img  <real> <ours> [--crop-real x0,y0,x1,y1] [--crop-ours x0,y0,x1,y1] [--size 1024x768] [--gray]
+Tables:  blind.py table <real.json> <ours.json>   (same keys, values rounded to 4 s.f.)
 Series:  blind.py series <real.csv> <ours.csv> --x COL --y COL[,COL...] [--xlabel ..] [--ylabel ..]
 
 Both sides are normalised identically (same crop aspect, same size, same JPEG
@@ -33,7 +34,7 @@ def norm_img(path, crop, size, gray):
     buf = io.BytesIO(); im.save(buf, 'JPEG', quality=88); buf.seek(0)
     return Image.open(buf).convert(im.mode)
 
-def plot_series(path, xcol, ycols, xlabel, ylabel, out):
+def plot_series(path, xcol, ycols, xlabel, ylabel, out, logy=False):
     import csv
     import matplotlib; matplotlib.use('Agg')
     import matplotlib.pyplot as plt
@@ -48,17 +49,27 @@ def plot_series(path, xcol, ycols, xlabel, ylabel, out):
                 continue
             if x == x and y == y: xs.append(x); ys.append(y)
         ax.plot(xs, ys, lw=1.2, label=yc)
-    ax.set_xlabel(xlabel or xcol); ax.set_ylabel(ylabel or ','.join(ycols)); ax.grid(alpha=.3); ax.legend()
+    ax.set_yscale('log') if logy else None; ax.set_xlabel(xlabel or xcol); ax.set_ylabel(ylabel or ','.join(ycols)); ax.grid(alpha=.3); ax.legend()
+    fig.tight_layout(); fig.savefig(out); plt.close(fig)
+
+def render_table(path, out):
+    """JSON {quantity: value-or-string}; numbers shown to 4 significant figures."""
+    import matplotlib; matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    data = json.load(open(path))
+    rows = [[k, (f'{v:.4g}' if isinstance(v, (int, float)) else str(v))] for k, v in data.items()]
+    fig, ax = plt.subplots(figsize=(8, 0.4 * len(rows) + 0.6), dpi=110); ax.axis('off')
+    t = ax.table(cellText=rows, colLabels=['quantity', 'value'], loc='center', cellLoc='left'); t.scale(1, 1.3)
     fig.tight_layout(); fig.savefig(out); plt.close(fig)
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('mode', choices=['img', 'series'])
+    ap.add_argument('mode', choices=['img', 'series', 'table'])
     ap.add_argument('real'); ap.add_argument('ours')
     ap.add_argument('--crop-real'); ap.add_argument('--crop-ours')
     ap.add_argument('--size', default='1024x768'); ap.add_argument('--gray', action='store_true')
     ap.add_argument('--x'); ap.add_argument('--y'); ap.add_argument('--xlabel'); ap.add_argument('--ylabel')
-    ap.add_argument('--piece', default='')
+    ap.add_argument('--piece', default=''); ap.add_argument('--logy', action='store_true')
     a = ap.parse_args()
     pid = secrets.token_hex(4)
     d = os.path.join(ROOT, 'work', 'blind', pid); os.makedirs(d, exist_ok=True)
@@ -68,10 +79,13 @@ def main():
         size = tuple(int(v) for v in a.size.split('x'))
         norm_img(a.real, box(a.crop_real), size, a.gray).save(os.path.join(d, names['real'] + '.png'))
         norm_img(a.ours, box(a.crop_ours), size, a.gray).save(os.path.join(d, names['ours'] + '.png'))
+    elif a.mode == 'table':
+        render_table(a.real, os.path.join(d, names['real'] + '.png'))
+        render_table(a.ours, os.path.join(d, names['ours'] + '.png'))
     else:
         ycols = a.y.split(',')
-        plot_series(a.real, a.x, ycols, a.xlabel, a.ylabel, os.path.join(d, names['real'] + '.png'))
-        plot_series(a.ours, a.x, ycols, a.xlabel, a.ylabel, os.path.join(d, names['ours'] + '.png'))
+        plot_series(a.real, a.x, ycols, a.xlabel, a.ylabel, os.path.join(d, names['real'] + '.png'), a.logy)
+        plot_series(a.ours, a.x, ycols, a.xlabel, a.ylabel, os.path.join(d, names['ours'] + '.png'), a.logy)
     os.makedirs(KEYS, exist_ok=True)
     json.dump({'id': pid, 'piece': a.piece, 'real': names['real'], 'ours': names['ours'],
                'real_src': a.real, 'ours_src': a.ours}, open(os.path.join(KEYS, pid + '.json'), 'w'))
