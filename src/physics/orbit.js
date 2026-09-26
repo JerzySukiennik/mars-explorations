@@ -328,3 +328,63 @@ export function measureNodalRate(body, radius, inc, { days = 5, dt = 5, j2 = tru
   }
   return f1.rate;
 }
+
+/** True longitude (rad, in (-pi, pi]) of state s: node longitude + argument of latitude. */
+export function trueLongitude(s) {
+  const h = cross(s.r, s.v);
+  const hHat = scale(h, 1 / norm(h));
+  const nxy = Math.hypot(h[0], h[1]);
+  // node direction; for an exactly equatorial orbit fall back to +x
+  const nHat = nxy > 1e-12 * norm(h) ? [-h[1] / nxy, h[0] / nxy, 0] : [1, 0, 0];
+  const om = Math.atan2(nHat[1], nHat[0]);
+  const u = Math.atan2(dot(s.r, cross(hHat, nHat)), dot(s.r, nHat));
+  return om + u;
+}
+
+/**
+ * Mean sidereal motion of an orbit: propagate `state` for `revs` revolutions
+ * (RK4, `stepsPerRev` steps each) and least-squares fit the unwrapped true
+ * longitude against time. Over whole revolutions the periodic
+ * equation-of-centre terms (2e sin M, ...) average out, leaving the secular
+ * rate, which includes the J2 apsidal/nodal drift. Returns
+ * {rate (rad/s), period (s), meanRadius (time-averaged |r|, m)}.
+ */
+export function measureMeanMotion(body, state, { revs = 60, stepsPerRev = 2000, j2 = true } = {}) {
+  const el = stateToElements(body.mu, state);
+  const pKep = 2 * Math.PI * Math.sqrt(el.a ** 3 / body.mu);
+  const dt = pKep / stepsPerRev;
+  let prev = trueLongitude(state), off = 0;
+  let sx = 0, sy = 0, sxx = 0, sxy = 0, sr = 0, n = 0;
+  propagate(body, state, revs * pKep, dt, {
+    j2,
+    onStep(t, s) {
+      let l = trueLongitude(s) + off;
+      if (l < prev - Math.PI) { off += 2 * Math.PI; l += 2 * Math.PI; }
+      if (l > prev + Math.PI) { off -= 2 * Math.PI; l -= 2 * Math.PI; }
+      prev = l;
+      sx += t; sy += l; sxx += t * t; sxy += t * l; sr += norm(s.r); n++;
+    },
+  });
+  const rate = (n * sxy - sx * sy) / (n * sxx - sx * sx);
+  return { rate, period: 2 * Math.PI / rate, meanRadius: sr / n };
+}
+
+/**
+ * Sidereal period (s) of a natural satellite given its published MEAN
+ * DISTANCE (time-averaged |r|), eccentricity and inclination. The orbit is
+ * started at periapsis from osculating elements whose semi-major axis is shot
+ * (secant) until the propagated time-averaged distance equals `meanDistance`;
+ * the period is then 2pi / fitted mean longitude rate. Treating a satellite's
+ * mean distance as the radius of a circular orbit drops the e^2/2 term
+ * (Phobos: ~1 km, i.e. ~5 s too long a period).
+ */
+export function measureSatellitePeriod(body, { meanDistance, e = 0, inc = 0 }, { revs = 60, j2 = true } = {}) {
+  const run = (a) => measureMeanMotion(body, elementsToState(body.mu, { a, e, inc }), { revs, j2 });
+  let a0 = meanDistance, f0 = run(a0);
+  let a1 = a0 + (meanDistance - f0.meanRadius), f1 = run(a1);
+  for (let i = 0; i < 10 && Math.abs(f1.meanRadius - meanDistance) > 0.5 && f1.meanRadius !== f0.meanRadius; i++) {
+    const a2 = a1 - (f1.meanRadius - meanDistance) * (a1 - a0) / (f1.meanRadius - f0.meanRadius);
+    a0 = a1; f0 = f1; a1 = a2; f1 = run(a1);
+  }
+  return f1.period;
+}

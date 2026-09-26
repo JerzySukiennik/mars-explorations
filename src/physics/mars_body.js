@@ -15,7 +15,7 @@
 //    fields; NSSDC fact sheet 1960.45e-6.
 //  - Rotation: IAU WGCCRE W-dot = 350.891982 deg/day (day = 86400 s).
 //  - Phobos / Deimos semi-major axes: JPL SSD satellite mean elements
-//    (9376 km, 23458 km).
+//    (9376 km, 23458 km; e 0.0151, 0.00033 per NSSDC fact sheet).
 //  - Earth: WGS-84 / EGM96 (GM 3.986004418e14, R_eq 6378.137 km,
 //    J2 1.08262668e-3, sidereal rotation 7.2921150e-5 rad/s).
 
@@ -33,8 +33,15 @@ export const MARS = Object.freeze({
   // Spin rate from the IAU prime-meridian rate W-dot (deg/day of 86400 s).
   spinRate: 350.891982 * DEG / DAY, // rad/s
   moons: Object.freeze({
-    phobos: Object.freeze({ name: 'Phobos', a: 9376e3, inc: 1.093 * DEG }),
-    deimos: Object.freeze({ name: 'Deimos', a: 23458e3, inc: 0.93 * DEG }),
+    // `a` is the published mean orbital distance (JPL SSD mean elements:
+    // the time-averaged Mars-moon distance, which the mar099 ephemeris
+    // reproduces: <|r|> = 9376.2 km for Phobos over 2020 Jan-Mar). It is NOT
+    // the radius of a circular orbit: Phobos has e = 0.0151, so its
+    // semi-major axis is ~1 km smaller than its mean distance
+    // (<r> = a (1 + e^2/2)). The propagator shoots an orbit with this mean
+    // distance and eccentricity.
+    phobos: Object.freeze({ name: 'Phobos', a: 9376e3, e: 0.0151, inc: 1.093 * DEG }),
+    deimos: Object.freeze({ name: 'Deimos', a: 23458e3, e: 0.00033, inc: 0.93 * DEG }),
   }),
 });
 

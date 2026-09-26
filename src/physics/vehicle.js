@@ -3,21 +3,21 @@
 // Single source of truth for all vehicle constants. Pure ES module (no DOM,
 // no three.js) so it can be imported from node tests and from the browser.
 //
-// Engine performance is NOT stored as thrust/Isp numbers. Each engine is
-// described by its combustion chamber and nozzle geometry (chamber pressure,
-// throat and exit diameters, effective ratio of specific heats of the
-// methalox products, theoretical characteristic velocity c* at the mixture
-// ratio, and efficiencies). Thrust, Isp and mass flow at any ambient
-// pressure and throttle are derived from 1-D isentropic nozzle theory:
+// Each engine is defined by its published rated operating point (thrust and
+// Isp at the rating condition) plus its nozzle geometry (exit diameter,
+// chamber pressure, effective gamma of the methalox products, c*). Mass
+// flow, vacuum/sea-level thrust and Isp at any ambient pressure and
+// throttle, throat area, exit pressure and flow separation are derived:
 //
-//   mdot      = Pc * At / c*_real
-//   F_vac     = eta_F * CF_vac_ideal(gamma, eps) * Pc * At
+//   mdot      = F_rated / (Isp_rated * g0)
+//   F_vac     = F_rated + pa_rated * Ae
 //   F(pa)     = F_vac - pa * Ae                (nozzle back-pressure loss)
 //   Isp(pa)   = F(pa) / (mdot * g0)
+//   At        = mdot * c*_real / Pc,  pe = Pc * (pe/pc)(Ae/At, gamma)
 //
 // Sources for the geometry and specs: SpaceX Starship/Raptor pages
 // (Raptor 2 ~300 bar chamber, 230 tf SL / 258 tf RVac; this model gives
-// ~230 tf / 327 s SL and ~266 tf / 379 s RVac from shared throat), Wikipedia
+// rated points 230 tf / 327 s SL and 258 tf / 380 s RVac), Wikipedia
 // "SpaceX Raptor", "SpaceX Starship", "SpaceX Super Heavy". Block 2 /
 // Raptor 2 is the default (current flying) configuration; Block 3 /
 // Raptor 3 is provided as an alternative.
@@ -77,26 +77,39 @@ export function idealCFvac(eps, g) {
 }
 
 // ---------------------------------------------------------------------------
-// Engine definitions (geometry + efficiencies)
+// Engine definitions (rated operating point + nozzle geometry)
 // ---------------------------------------------------------------------------
-// throatDia: all Raptor variants share the same powerhead / throat; the SL
-// and RVac differ in nozzle extension. etaCStar is combustion efficiency
-// (full-flow staged combustion is very efficient). etaF lumps nozzle losses
-// (divergence, boundary layer, kinetics) - the short, regeneratively cooled
-// SL bell loses more than the long radiatively-cooled RVac bell.
+// Each engine is anchored to its published RATED operating point, exactly as
+// the manufacturer specifies it (thrust in tonnes-force and Isp at the rating
+// condition: sea level for the SL Raptor, vacuum for RVac). These are vehicle
+// input parameters, like dry mass or propellant load. Everything else is
+// derived from physics:
+//   mdot          = F_rated / (Isp_rated * g0)            (at 100 % throttle)
+//   F_vac         = F_rated + pa_rated * Ae               (momentum + pe*Ae)
+//   F(pa)         = F_vac - pa * Ae                       (back-pressure loss)
+//   Isp(pa)       = F(pa) / (mdot * g0)
+//   throat area   At = mdot * c*_real / Pc                (choked throat)
+//   exit pressure pe = Pc * (pe/pc)(eps, gamma)           (isentropic)
+// Earlier rounds derived the rated point itself from an idealised CF and
+// guessed efficiencies, which drifted from the official 230 tf / 327 s /
+// 380 s by ~0.1-0.3 % (e.g. 2257 kN, 328 s, 379 s). The rated point is now
+// the input; the nozzle model is only used where no published number exists
+// (off-design pressure, exit pressure, flow separation).
 function makeEngine(def) {
   const g = def.gamma ?? PROPELLANT.gamma;
-  const At = Math.PI * def.throatDia ** 2 / 4;
   const Ae = Math.PI * def.exitDia ** 2 / 4;
-  const eps = Ae / At;
+  const Fr = def.ratedThrustTf * G0 * 1000;               // N
+  const mdot = Fr / (def.ratedIsp * G0);                  // kg/s at 100 %
+  const thrustVac = Fr + def.ratedAmbient * Ae;           // N
   const cStar = PROPELLANT.cStarTheory * def.etaCStar;
-  const mdot = (def.chamberPressure * At) / cStar;         // kg/s at 100 %
+  const At = mdot * cStar / def.chamberPressure;
+  const eps = Ae / At;
   const pe = exitPressureRatio(eps, g) * def.chamberPressure;
-  const thrustVac = def.etaF * idealCFvac(eps, g) * def.chamberPressure * At; // N
   const e = {
     ...def,
     gamma: g,
     throatArea: At,
+    throatDia: Math.sqrt(4 * At / Math.PI),
     exitArea: Ae,
     expansionRatio: eps,
     cStar,
@@ -113,26 +126,28 @@ function makeEngine(def) {
 }
 
 export const ENGINES = {
-  // Raptor 2 (Block 2, currently flying)
+  // Raptor 2 (Block 2, currently flying). SpaceX: 230 tf at sea level;
+  // Isp 327 s SL. RVac: 258 tf vacuum, 380 s.
   raptor2: makeEngine({
-    name: 'Raptor 2 (sea level)', chamberPressure: 300e5,
-    throatDia: 0.235, exitDia: 1.30, etaCStar: 0.99, etaF: 0.955,
+    name: 'Raptor 2 (sea level)', ratedThrustTf: 230, ratedIsp: 327, ratedAmbient: P_SL,
+    chamberPressure: 300e5, exitDia: 1.30, etaCStar: 0.99,
     throttleMin: 0.40, throttleMax: 1.0, dryMass: 1630,
   }),
   raptor2Vac: makeEngine({
-    name: 'Raptor 2 Vacuum (RVac)', chamberPressure: 300e5,
-    throatDia: 0.235, exitDia: 2.30, etaCStar: 0.99, etaF: 0.985,
+    name: 'Raptor 2 Vacuum (RVac)', ratedThrustTf: 258, ratedIsp: 380, ratedAmbient: 0,
+    chamberPressure: 300e5, exitDia: 2.30, etaCStar: 0.99,
     throttleMin: 0.40, throttleMax: 1.0, dryMass: 2080,
   }),
-  // Raptor 3 (Block 3 alternative): same geometry, ~350 bar chamber.
+  // Raptor 3 (Block 3 alternative): 280 tf SL / 306 tf vac (SpaceX 2024
+  // figures; ~350 bar chamber), same nozzle exits.
   raptor3: makeEngine({
-    name: 'Raptor 3 (sea level)', chamberPressure: 350e5,
-    throatDia: 0.235, exitDia: 1.30, etaCStar: 0.99, etaF: 0.955,
+    name: 'Raptor 3 (sea level)', ratedThrustTf: 280, ratedIsp: 327, ratedAmbient: P_SL,
+    chamberPressure: 350e5, exitDia: 1.30, etaCStar: 0.99,
     throttleMin: 0.40, throttleMax: 1.0, dryMass: 1525,
   }),
   raptor3Vac: makeEngine({
-    name: 'Raptor 3 Vacuum', chamberPressure: 350e5,
-    throatDia: 0.235, exitDia: 2.30, etaCStar: 0.99, etaF: 0.985,
+    name: 'Raptor 3 Vacuum', ratedThrustTf: 306, ratedIsp: 380, ratedAmbient: 0,
+    chamberPressure: 350e5, exitDia: 2.30, etaCStar: 0.99,
     throttleMin: 0.40, throttleMax: 1.0, dryMass: 1950,
   }),
 };

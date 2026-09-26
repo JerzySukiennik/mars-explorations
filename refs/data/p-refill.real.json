@@ -1,0 +1,10 @@
+{
+  "ship_prop_capacity_t": 1500,
+  "prop_per_tanker_t": 150,
+  "tankers_for_full_fill": 12,
+  "flight3_transfer_demo_t": 10,
+  "transfer_rate_t_per_min": 5,
+  "full_transfer_time_h": 5,
+  "boiloff_pct_per_day": 0.1,
+  "settling_accel_mms2": 0.98
+}

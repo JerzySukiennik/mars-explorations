@@ -1538,5 +1538,2257 @@
   "width": null,
   "height": null,
   "verified_real_reason": "Numbers OCR-extracted from SpaceX official Starship webcast HUD by the source repo author."
+ },
+ {
+  "path": "refs/real/ship_liftoff/ship_liftoff_IFT5_Tplus00h00m08s_aerial_dawn_liftoff_fireball.png",
+  "category": "ship_liftoff",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlyognOgJL",
+  "what_it_shows": "IFT-5 T+00:00:08 \u2014 Starship/Super Heavy ignition & liftoff: aerial dawn liftoff fireball",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 5 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-5 / tweet 1845152255944819015), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 5,
+  "mission_T_plus_s": 8,
+  "webcast_offset_s": 1992.6,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_liftoff/ship_liftoff_IFT6_Tplus00h00m04s_drone_aerial_ignition_bay.png",
+  "category": "ship_liftoff",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlydZAeOJL",
+  "what_it_shows": "IFT-6 T+00:00:04 \u2014 Starship/Super Heavy ignition & liftoff: drone aerial ignition bay",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 6 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-6 / tweet 1857622520154960080), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 6,
+  "mission_T_plus_s": 4,
+  "webcast_offset_s": 2411.8,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_liftoff/ship_liftoff_IFT7_Tplus00h00m08s_ground_tower_clearing.png",
+  "category": "ship_liftoff",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1OwGWNYrzZVKQ",
+  "what_it_shows": "IFT-7 T+00:00:08 \u2014 Starship/Super Heavy ignition & liftoff: ground tower clearing",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 7 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-7 / tweet 1879288668101497144), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 7,
+  "mission_T_plus_s": 8,
+  "webcast_offset_s": 2414.3,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_liftoff/ship_liftoff_IFT8_Tplus00h00m04s_overhead_drone_ignition.png",
+  "category": "ship_liftoff",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1lPKqMQbAWLKb",
+  "what_it_shows": "IFT-8 T+00:00:04 \u2014 Starship/Super Heavy ignition & liftoff: overhead drone ignition",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 8 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-8 / tweet 1896909928381768044), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 8,
+  "mission_T_plus_s": 4,
+  "webcast_offset_s": 2141.1,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_liftoff/ship_liftoff_IFT9_Tplus00h00m12s_aerial_clearing_tower_plume.png",
+  "category": "ship_liftoff",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1OwxWXMRAXmKQ",
+  "what_it_shows": "IFT-9 T+00:00:12 \u2014 Starship/Super Heavy ignition & liftoff: aerial clearing tower plume",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 9 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-9 / tweet 1925929228232474849), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 9,
+  "mission_T_plus_s": 12,
+  "webcast_offset_s": 2797.3,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_liftoff/ship_liftoff_IFT10_Tplus00h00m00s_ground_ignition_deluge_clouds.png",
+  "category": "ship_liftoff",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1lPKqvNwLREGb",
+  "what_it_shows": "IFT-10 T+00:00:00 \u2014 Starship/Super Heavy ignition & liftoff: ground ignition deluge clouds",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 10 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-10 / tweet 1960178606212063307), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 10,
+  "mission_T_plus_s": 0,
+  "webcast_offset_s": 3004.1,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_liftoff/ship_liftoff_IFT10_Tplus00h00m20s_drone_ascent_over_bay.png",
+  "category": "ship_liftoff",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1lPKqvNwLREGb",
+  "what_it_shows": "IFT-10 T+00:00:20 \u2014 Starship/Super Heavy ignition & liftoff: drone ascent over bay",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 10 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-10 / tweet 1960178606212063307), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 10,
+  "mission_T_plus_s": 20,
+  "webcast_offset_s": 3024.1,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_liftoff/ship_liftoff_IFT11_Tplus00h00m08s_aerial_liftoff_fireball.png",
+  "category": "ship_liftoff",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1mrGmBjyEZgJy",
+  "what_it_shows": "IFT-11 T+00:00:08 \u2014 Starship/Super Heavy ignition & liftoff: aerial liftoff fireball",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 11 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-11 / tweet 1972796063359647955), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 11,
+  "mission_T_plus_s": 8,
+  "webcast_offset_s": 2032.1,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_liftoff/ship_liftoff_IFT12_Tplus00h00m00s_ground_ignition_V3_pad.png",
+  "category": "ship_liftoff",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1pKkOykQRgNKj",
+  "what_it_shows": "IFT-12 T+00:00:00 \u2014 Starship/Super Heavy ignition & liftoff: ground ignition V3 pad",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 12 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-12 / tweet 2057843268038082848), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 12,
+  "mission_T_plus_s": 0,
+  "webcast_offset_s": 1944.3,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_liftoff/ship_liftoff_IFT12_Tplus00h00m12s_aerial_liftoff_plume_marsh.png",
+  "category": "ship_liftoff",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1pKkOykQRgNKj",
+  "what_it_shows": "IFT-12 T+00:00:12 \u2014 Starship/Super Heavy ignition & liftoff: aerial liftoff plume marsh",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 12 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-12 / tweet 2057843268038082848), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 12,
+  "mission_T_plus_s": 12,
+  "webcast_offset_s": 1956.3,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_ascent/ship_ascent_IFT5_Tplus00h01m15s_night_sky_tracking_plume.png",
+  "category": "ship_ascent",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlyognOgJL",
+  "what_it_shows": "IFT-5 T+00:01:15 \u2014 ascent (tracking/onboard, plume): night sky tracking plume",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 5 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-5 / tweet 1845152255944819015), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 5,
+  "mission_T_plus_s": 75,
+  "webcast_offset_s": 2059.6,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_ascent/ship_ascent_IFT6_Tplus00h01m00s_tracking_plume_dusk.png",
+  "category": "ship_ascent",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlydZAeOJL",
+  "what_it_shows": "IFT-6 T+00:01:00 \u2014 ascent (tracking/onboard, plume): tracking plume dusk",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 6 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-6 / tweet 1857622520154960080), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 6,
+  "mission_T_plus_s": 60,
+  "webcast_offset_s": 2467.9,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_ascent/ship_ascent_IFT7_Tplus00h00m20s_ground_tracking_plume.png",
+  "category": "ship_ascent",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1OwGWNYrzZVKQ",
+  "what_it_shows": "IFT-7 T+00:00:20 \u2014 ascent (tracking/onboard, plume): ground tracking plume",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 7 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-7 / tweet 1879288668101497144), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 7,
+  "mission_T_plus_s": 20,
+  "webcast_offset_s": 2426.3,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_ascent/ship_ascent_IFT8_Tplus00h00m40s_tracking_engines_plume.png",
+  "category": "ship_ascent",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1lPKqMQbAWLKb",
+  "what_it_shows": "IFT-8 T+00:00:40 \u2014 ascent (tracking/onboard, plume): tracking engines plume",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 8 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-8 / tweet 1896909928381768044), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 8,
+  "mission_T_plus_s": 40,
+  "webcast_offset_s": 2177.1,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_ascent/ship_ascent_IFT10_Tplus00h00m40s_tracking_engine_ring_plume.png",
+  "category": "ship_ascent",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1lPKqvNwLREGb",
+  "what_it_shows": "IFT-10 T+00:00:40 \u2014 ascent (tracking/onboard, plume): tracking engine ring plume",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 10 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-10 / tweet 1960178606212063307), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 10,
+  "mission_T_plus_s": 40,
+  "webcast_offset_s": 3044.1,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_ascent/ship_ascent_IFT11_Tplus00h00m40s_long_range_tracking_plume.png",
+  "category": "ship_ascent",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1mrGmBjyEZgJy",
+  "what_it_shows": "IFT-11 T+00:00:40 \u2014 ascent (tracking/onboard, plume): long range tracking plume",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 11 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-11 / tweet 1972796063359647955), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 11,
+  "mission_T_plus_s": 40,
+  "webcast_offset_s": 2064.1,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_ascent/ship_ascent_IFT12_Tplus00h01m00s_maxq_tracking_plume.png",
+  "category": "ship_ascent",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1pKkOykQRgNKj",
+  "what_it_shows": "IFT-12 T+00:01:00 \u2014 ascent (tracking/onboard, plume): maxq tracking plume",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 12 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-12 / tweet 2057843268038082848), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 12,
+  "mission_T_plus_s": 60,
+  "webcast_offset_s": 2004.3,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_ascent/ship_ascent_IFT12_Tplus00h00m40s_onboard_ship_ground_below.png",
+  "category": "ship_ascent",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1pKkOykQRgNKj",
+  "what_it_shows": "IFT-12 T+00:00:40 \u2014 ascent (tracking/onboard, plume): onboard ship ground below",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 12 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-12 / tweet 2057843268038082848), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 12,
+  "mission_T_plus_s": 40,
+  "webcast_offset_s": 1984.3,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_ascent/ship_ascent_IFT9_Tplus00h01m40s_onboard_ship_earth_limb.png",
+  "category": "ship_ascent",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1OwxWXMRAXmKQ",
+  "what_it_shows": "IFT-9 T+00:01:40 \u2014 ascent (tracking/onboard, plume): onboard ship earth limb",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 9 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-9 / tweet 1925929228232474849), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 9,
+  "mission_T_plus_s": 100,
+  "webcast_offset_s": 2885.3,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_hotstaging/ship_hotstaging_IFT5_Tplus00h02m42s_onboard_split_hotstage_fire.png",
+  "category": "ship_hotstaging",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlyognOgJL",
+  "what_it_shows": "IFT-5 T+00:02:42 \u2014 hot staging: onboard split hotstage fire (split-screen composite of two camera feeds with black letterbox bands)",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 5 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-5 / tweet 1845152255944819015), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 5,
+  "mission_T_plus_s": 162,
+  "webcast_offset_s": 2146.6,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_hotstaging/ship_hotstaging_IFT6_Tplus00h02m38s_tracking_hotstage_bloom.png",
+  "category": "ship_hotstaging",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlydZAeOJL",
+  "what_it_shows": "IFT-6 T+00:02:38 \u2014 hot staging: tracking hotstage bloom",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 6 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-6 / tweet 1857622520154960080), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 6,
+  "mission_T_plus_s": 158,
+  "webcast_offset_s": 2565.9,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_hotstaging/ship_hotstaging_IFT7_Tplus00h02m42s_onboard_hotstage_fire_underside.png",
+  "category": "ship_hotstaging",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1OwGWNYrzZVKQ",
+  "what_it_shows": "IFT-7 T+00:02:42 \u2014 hot staging: onboard hotstage fire underside",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 7 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-7 / tweet 1879288668101497144), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 7,
+  "mission_T_plus_s": 162,
+  "webcast_offset_s": 2568.3,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_hotstaging/ship_hotstaging_IFT7_Tplus00h02m46s_onboard_booster_separating.png",
+  "category": "ship_hotstaging",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1OwGWNYrzZVKQ",
+  "what_it_shows": "IFT-7 T+00:02:46 \u2014 hot staging: onboard booster separating",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 7 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-7 / tweet 1879288668101497144), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 7,
+  "mission_T_plus_s": 166,
+  "webcast_offset_s": 2572.3,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_hotstaging/ship_hotstaging_IFT10_Tplus00h02m50s_onboard_split_hotstage_flames.png",
+  "category": "ship_hotstaging",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1lPKqvNwLREGb",
+  "what_it_shows": "IFT-10 T+00:02:50 \u2014 hot staging: onboard split hotstage flames (split-screen composite of two camera feeds with black letterbox bands)",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 10 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-10 / tweet 1960178606212063307), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 10,
+  "mission_T_plus_s": 170,
+  "webcast_offset_s": 3174.1,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_hotstaging/ship_hotstaging_IFT11_Tplus00h02m46s_onboard_ship_staging_exhaust.png",
+  "category": "ship_hotstaging",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1mrGmBjyEZgJy",
+  "what_it_shows": "IFT-11 T+00:02:46 \u2014 hot staging: onboard ship staging exhaust",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 11 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-11 / tweet 1972796063359647955), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 11,
+  "mission_T_plus_s": 166,
+  "webcast_offset_s": 2190.1,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_hotstaging/ship_hotstaging_IFT12_Tplus00h02m38s_onboard_booster_separation_earth.png",
+  "category": "ship_hotstaging",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1pKkOykQRgNKj",
+  "what_it_shows": "IFT-12 T+00:02:38 \u2014 hot staging: onboard booster separation earth",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 12 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-12 / tweet 2057843268038082848), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 12,
+  "mission_T_plus_s": 158,
+  "webcast_offset_s": 2102.4,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_hotstaging/ship_hotstaging_IFT8_Tplus00h02m38s_split_onboard_tracking_bloom.png",
+  "category": "ship_hotstaging",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1lPKqMQbAWLKb",
+  "what_it_shows": "IFT-8 T+00:02:38 \u2014 hot staging: split onboard tracking bloom (split-screen composite of two camera feeds with black letterbox bands)",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 8 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-8 / tweet 1896909928381768044), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 8,
+  "mission_T_plus_s": 158,
+  "webcast_offset_s": 2295.2,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_space_earth/ship_space_earth_IFT5_Tplus00h21m40s_fisheye_flap_over_earth.png",
+  "category": "ship_space_earth",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlyognOgJL",
+  "what_it_shows": "IFT-5 T+00:21:40 \u2014 ship in space / Earth below / payload bay / relight: fisheye flap over earth",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 5 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-5 / tweet 1845152255944819015), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 5,
+  "mission_T_plus_s": 1300,
+  "webcast_offset_s": 3284.6,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_space_earth/ship_space_earth_IFT5_Tplus00h35m40s_ship_body_earth_limb.png",
+  "category": "ship_space_earth",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlyognOgJL",
+  "what_it_shows": "IFT-5 T+00:35:40 \u2014 ship in space / Earth below / payload bay / relight: ship body earth limb",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 5 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-5 / tweet 1845152255944819015), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 5,
+  "mission_T_plus_s": 2140,
+  "webcast_offset_s": 4124.5,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_space_earth/ship_space_earth_IFT6_Tplus00h03m00s_flap_earth_clouds.png",
+  "category": "ship_space_earth",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlydZAeOJL",
+  "what_it_shows": "IFT-6 T+00:03:00 \u2014 ship in space / Earth below / payload bay / relight: flap earth clouds",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 6 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-6 / tweet 1857622520154960080), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 6,
+  "mission_T_plus_s": 180,
+  "webcast_offset_s": 2588.0,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_space_earth/ship_space_earth_IFT6_Tplus00h10m00s_fisheye_aft_flap_earth.png",
+  "category": "ship_space_earth",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlydZAeOJL",
+  "what_it_shows": "IFT-6 T+00:10:00 \u2014 ship in space / Earth below / payload bay / relight: fisheye aft flap earth",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 6 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-6 / tweet 1857622520154960080), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 6,
+  "mission_T_plus_s": 600,
+  "webcast_offset_s": 3008.1,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_space_earth/ship_space_earth_IFT9_Tplus00h17m00s_payload_bay_interior.png",
+  "category": "ship_space_earth",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1OwxWXMRAXmKQ",
+  "what_it_shows": "IFT-9 T+00:17:00 \u2014 ship in space / Earth below / payload bay / relight: payload bay interior",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 9 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-9 / tweet 1925929228232474849), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 9,
+  "mission_T_plus_s": 1020,
+  "webcast_offset_s": 3805.4,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_space_earth/ship_space_earth_IFT10_Tplus00h19m19s_payload_bay_pez_dispenser.png",
+  "category": "ship_space_earth",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1lPKqvNwLREGb",
+  "what_it_shows": "IFT-10 T+00:19:19 \u2014 ship in space / Earth below / payload bay / relight: payload bay pez dispenser",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 10 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-10 / tweet 1960178606212063307), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 10,
+  "mission_T_plus_s": 1159,
+  "webcast_offset_s": 4163.2,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_space_earth/ship_space_earth_IFT10_Tplus00h21m40s_starlink_sim_deploy_bay.png",
+  "category": "ship_space_earth",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1lPKqvNwLREGb",
+  "what_it_shows": "IFT-10 T+00:21:40 \u2014 ship in space / Earth below / payload bay / relight: starlink sim deploy bay",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 10 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-10 / tweet 1960178606212063307), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 10,
+  "mission_T_plus_s": 1300,
+  "webcast_offset_s": 4304.2,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_space_earth/ship_space_earth_IFT10_Tplus00h38m00s_raptor_relight_aft_view.png",
+  "category": "ship_space_earth",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1lPKqvNwLREGb",
+  "what_it_shows": "IFT-10 T+00:38:00 \u2014 ship in space / Earth below / payload bay / relight: raptor relight aft view",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 10 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-10 / tweet 1960178606212063307), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 10,
+  "mission_T_plus_s": 2280,
+  "webcast_offset_s": 5284.4,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_space_earth/ship_space_earth_IFT11_Tplus00h38m00s_raptor_relight_aft_view.png",
+  "category": "ship_space_earth",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1mrGmBjyEZgJy",
+  "what_it_shows": "IFT-11 T+00:38:00 \u2014 ship in space / Earth below / payload bay / relight: raptor relight aft view",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 11 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-11 / tweet 1972796063359647955), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 11,
+  "mission_T_plus_s": 2280,
+  "webcast_offset_s": 4304.3,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_space_earth/ship_space_earth_IFT11_Tplus00h24m00s_deploy_split_bay_and_sim.png",
+  "category": "ship_space_earth",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1mrGmBjyEZgJy",
+  "what_it_shows": "IFT-11 T+00:24:00 \u2014 ship in space / Earth below / payload bay / relight: deploy split bay and sim (split-screen composite of two camera feeds with black letterbox bands)",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 11 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-11 / tweet 1972796063359647955), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 11,
+  "mission_T_plus_s": 1440,
+  "webcast_offset_s": 3464.2,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_space_earth/ship_space_earth_IFT12_Tplus00h10m00s_fisheye_flap_tiles_earth.png",
+  "category": "ship_space_earth",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1pKkOykQRgNKj",
+  "what_it_shows": "IFT-12 T+00:10:00 \u2014 ship in space / Earth below / payload bay / relight: fisheye flap tiles earth",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 12 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-12 / tweet 2057843268038082848), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 12,
+  "mission_T_plus_s": 600,
+  "webcast_offset_s": 2544.4,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_space_earth/ship_space_earth_IFT12_Tplus00h17m00s_payload_door_sun_glare.png",
+  "category": "ship_space_earth",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1pKkOykQRgNKj",
+  "what_it_shows": "IFT-12 T+00:17:00 \u2014 ship in space / Earth below / payload bay / relight: payload door sun glare",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 12 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-12 / tweet 2057843268038082848), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 12,
+  "mission_T_plus_s": 1020,
+  "webcast_offset_s": 2964.5,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_space_earth/ship_space_earth_IFT12_Tplus00h35m40s_ship_exterior_night_view.png",
+  "category": "ship_space_earth",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1pKkOykQRgNKj",
+  "what_it_shows": "IFT-12 T+00:35:40 \u2014 ship in space / Earth below / payload bay / relight: ship exterior night view",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 12 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-12 / tweet 2057843268038082848), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 12,
+  "mission_T_plus_s": 2140,
+  "webcast_offset_s": 4084.7,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_space_earth/ship_space_earth_IFT9_Tplus00h06m35s_fisheye_flap_earth_clouds.png",
+  "category": "ship_space_earth",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1OwxWXMRAXmKQ",
+  "what_it_shows": "IFT-9 T+00:06:35 \u2014 ship in space / Earth below / payload bay / relight: fisheye flap earth clouds",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 9 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-9 / tweet 1925929228232474849), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 9,
+  "mission_T_plus_s": 395,
+  "webcast_offset_s": 3180.4,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_reentry/ship_reentry_IFT5_Tplus00h46m40s_flap_plasma_over_clouds.png",
+  "category": "ship_reentry",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlyognOgJL",
+  "what_it_shows": "IFT-5 T+00:46:40 \u2014 ship reentry plasma (onboard): flap plasma over clouds",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 5 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-5 / tweet 1845152255944819015), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 5,
+  "mission_T_plus_s": 2800,
+  "webcast_offset_s": 4784.6,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_reentry/ship_reentry_IFT5_Tplus00h48m20s_flap_plasma_pink.png",
+  "category": "ship_reentry",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlyognOgJL",
+  "what_it_shows": "IFT-5 T+00:48:20 \u2014 ship reentry plasma (onboard): flap plasma pink",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 5 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-5 / tweet 1845152255944819015), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 5,
+  "mission_T_plus_s": 2900,
+  "webcast_offset_s": 4884.6,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_reentry/ship_reentry_IFT5_Tplus00h55m00s_split_plasma_and_flap_fisheye.png",
+  "category": "ship_reentry",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlyognOgJL",
+  "what_it_shows": "IFT-5 T+00:55:00 \u2014 ship reentry plasma (onboard): split plasma and flap fisheye (split-screen composite of two camera feeds with black letterbox bands)",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 5 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-5 / tweet 1845152255944819015), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 5,
+  "mission_T_plus_s": 3300,
+  "webcast_offset_s": 5284.6,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_reentry/ship_reentry_IFT6_Tplus00h48m20s_aft_cam_plasma_glow.png",
+  "category": "ship_reentry",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlydZAeOJL",
+  "what_it_shows": "IFT-6 T+00:48:20 \u2014 ship reentry plasma (onboard): aft cam plasma glow",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 6 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-6 / tweet 1857622520154960080), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 6,
+  "mission_T_plus_s": 2900,
+  "webcast_offset_s": 5308.3,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_reentry/ship_reentry_IFT6_Tplus00h50m00s_aft_cam_plasma_yellow_streak.png",
+  "category": "ship_reentry",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlydZAeOJL",
+  "what_it_shows": "IFT-6 T+00:50:00 \u2014 ship reentry plasma (onboard): aft cam plasma yellow streak",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 6 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-6 / tweet 1857622520154960080), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 6,
+  "mission_T_plus_s": 3000,
+  "webcast_offset_s": 5408.3,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_reentry/ship_reentry_IFT6_Tplus00h56m40s_flap_golden_plasma_clouds.png",
+  "category": "ship_reentry",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlydZAeOJL",
+  "what_it_shows": "IFT-6 T+00:56:40 \u2014 ship reentry plasma (onboard): flap golden plasma clouds",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 6 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-6 / tweet 1857622520154960080), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 6,
+  "mission_T_plus_s": 3400,
+  "webcast_offset_s": 5808.4,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_reentry/ship_reentry_IFT9_Tplus00h42m40s_aft_engine_plasma_pink.png",
+  "category": "ship_reentry",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1OwxWXMRAXmKQ",
+  "what_it_shows": "IFT-9 T+00:42:40 \u2014 ship reentry plasma (onboard): aft engine plasma pink",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 9 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-9 / tweet 1925929228232474849), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 9,
+  "mission_T_plus_s": 2560,
+  "webcast_offset_s": 5345.5,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_reentry/ship_reentry_IFT10_Tplus00h46m40s_fisheye_flap_pink_plasma.png",
+  "category": "ship_reentry",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1lPKqvNwLREGb",
+  "what_it_shows": "IFT-10 T+00:46:40 \u2014 ship reentry plasma (onboard): fisheye flap pink plasma",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 10 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-10 / tweet 1960178606212063307), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 10,
+  "mission_T_plus_s": 2800,
+  "webcast_offset_s": 5804.4,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_reentry/ship_reentry_IFT10_Tplus00h48m20s_flap_plasma_magenta.png",
+  "category": "ship_reentry",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1lPKqvNwLREGb",
+  "what_it_shows": "IFT-10 T+00:48:20 \u2014 ship reentry plasma (onboard): flap plasma magenta",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 10 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-10 / tweet 1960178606212063307), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 10,
+  "mission_T_plus_s": 2900,
+  "webcast_offset_s": 5904.4,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_reentry/ship_reentry_IFT10_Tplus00h51m40s_aft_engines_plasma.png",
+  "category": "ship_reentry",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1lPKqvNwLREGb",
+  "what_it_shows": "IFT-10 T+00:51:40 \u2014 ship reentry plasma (onboard): aft engines plasma",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 10 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-10 / tweet 1960178606212063307), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 10,
+  "mission_T_plus_s": 3100,
+  "webcast_offset_s": 6104.4,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_reentry/ship_reentry_IFT10_Tplus00h53m20s_fisheye_flap_iridescent_plasma.png",
+  "category": "ship_reentry",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1lPKqvNwLREGb",
+  "what_it_shows": "IFT-10 T+00:53:20 \u2014 ship reentry plasma (onboard): fisheye flap iridescent plasma",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 10 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-10 / tweet 1960178606212063307), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 10,
+  "mission_T_plus_s": 3200,
+  "webcast_offset_s": 6204.4,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_reentry/ship_reentry_IFT11_Tplus00h45m00s_flap_red_plasma.png",
+  "category": "ship_reentry",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1mrGmBjyEZgJy",
+  "what_it_shows": "IFT-11 T+00:45:00 \u2014 ship reentry plasma (onboard): flap red plasma",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 11 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-11 / tweet 1972796063359647955), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 11,
+  "mission_T_plus_s": 2700,
+  "webcast_offset_s": 4724.3,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_reentry/ship_reentry_IFT11_Tplus00h48m20s_flap_plasma_orange.png",
+  "category": "ship_reentry",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1mrGmBjyEZgJy",
+  "what_it_shows": "IFT-11 T+00:48:20 \u2014 ship reentry plasma (onboard): flap plasma orange",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 11 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-11 / tweet 1972796063359647955), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 11,
+  "mission_T_plus_s": 2900,
+  "webcast_offset_s": 4924.3,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_reentry/ship_reentry_IFT11_Tplus00h51m40s_flap_plasma_violet.png",
+  "category": "ship_reentry",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1mrGmBjyEZgJy",
+  "what_it_shows": "IFT-11 T+00:51:40 \u2014 ship reentry plasma (onboard): flap plasma violet",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 11 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-11 / tweet 1972796063359647955), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 11,
+  "mission_T_plus_s": 3100,
+  "webcast_offset_s": 5124.4,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_reentry/ship_reentry_IFT12_Tplus00h48m20s_blue_plasma_sheet.png",
+  "category": "ship_reentry",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1pKkOykQRgNKj",
+  "what_it_shows": "IFT-12 T+00:48:20 \u2014 ship reentry plasma (onboard): blue plasma sheet",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 12 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-12 / tweet 2057843268038082848), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 12,
+  "mission_T_plus_s": 2900,
+  "webcast_offset_s": 4844.9,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_reentry/ship_reentry_IFT12_Tplus00h53m20s_plasma_flap_yellow_violet.png",
+  "category": "ship_reentry",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1pKkOykQRgNKj",
+  "what_it_shows": "IFT-12 T+00:53:20 \u2014 ship reentry plasma (onboard): plasma flap yellow violet",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 12 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-12 / tweet 2057843268038082848), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 12,
+  "mission_T_plus_s": 3200,
+  "webcast_offset_s": 5144.9,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_reentry/ship_reentry_IFT12_Tplus00h58m20s_plasma_flap_tiles.png",
+  "category": "ship_reentry",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1pKkOykQRgNKj",
+  "what_it_shows": "IFT-12 T+00:58:20 \u2014 ship reentry plasma (onboard): plasma flap tiles",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 12 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-12 / tweet 2057843268038082848), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 12,
+  "mission_T_plus_s": 3500,
+  "webcast_offset_s": 5445.0,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_landing/ship_landing_IFT5_Tplus01h05m05s_night_buoy_ship_lit.png",
+  "category": "ship_landing",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlyognOgJL",
+  "what_it_shows": "IFT-5 T+01:05:05 \u2014 ship flip, landing burn & splashdown: night buoy ship lit",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 5 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-5 / tweet 1845152255944819015), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 5,
+  "mission_T_plus_s": 3905,
+  "webcast_offset_s": 5889.6,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_landing/ship_landing_IFT5_Tplus01h06m40s_night_buoy_fireball.png",
+  "category": "ship_landing",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlyognOgJL",
+  "what_it_shows": "IFT-5 T+01:06:40 \u2014 ship flip, landing burn & splashdown: night buoy fireball",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 5 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-5 / tweet 1845152255944819015), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 5,
+  "mission_T_plus_s": 4000,
+  "webcast_offset_s": 5984.6,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_landing/ship_landing_IFT6_Tplus01h05m16s_onboard_flip_flap_ocean.png",
+  "category": "ship_landing",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlydZAeOJL",
+  "what_it_shows": "IFT-6 T+01:05:16 \u2014 ship flip, landing burn & splashdown: onboard flip flap ocean",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 6 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-6 / tweet 1857622520154960080), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 6,
+  "mission_T_plus_s": 3916,
+  "webcast_offset_s": 6324.5,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_landing/ship_landing_IFT6_Tplus01h05m26s_split_buoy_landing_burn.png",
+  "category": "ship_landing",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlydZAeOJL",
+  "what_it_shows": "IFT-6 T+01:05:26 \u2014 ship flip, landing burn & splashdown: split buoy landing burn (split-screen composite of two camera feeds with black letterbox bands)",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 6 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-6 / tweet 1857622520154960080), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 6,
+  "mission_T_plus_s": 3926,
+  "webcast_offset_s": 6334.5,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_landing/ship_landing_IFT6_Tplus01h05m31s_buoy_landing_burn_steam.png",
+  "category": "ship_landing",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlydZAeOJL",
+  "what_it_shows": "IFT-6 T+01:05:31 \u2014 ship flip, landing burn & splashdown: buoy landing burn steam",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 6 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-6 / tweet 1857622520154960080), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 6,
+  "mission_T_plus_s": 3931,
+  "webcast_offset_s": 6339.5,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_landing/ship_landing_IFT10_Tplus01h06m21s_onboard_flip_aft_view.png",
+  "category": "ship_landing",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1lPKqvNwLREGb",
+  "what_it_shows": "IFT-10 T+01:06:21 \u2014 ship flip, landing burn & splashdown: onboard flip aft view",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 10 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-10 / tweet 1960178606212063307), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 10,
+  "mission_T_plus_s": 3981,
+  "webcast_offset_s": 6985.5,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_landing/ship_landing_IFT10_Tplus01h06m26s_buoy_landing_burn.png",
+  "category": "ship_landing",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1lPKqvNwLREGb",
+  "what_it_shows": "IFT-10 T+01:06:26 \u2014 ship flip, landing burn & splashdown: buoy landing burn",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 10 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-10 / tweet 1960178606212063307), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 10,
+  "mission_T_plus_s": 3986,
+  "webcast_offset_s": 6990.5,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_landing/ship_landing_IFT10_Tplus01h06m33s_buoy_tipover_steam.png",
+  "category": "ship_landing",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1lPKqvNwLREGb",
+  "what_it_shows": "IFT-10 T+01:06:33 \u2014 ship flip, landing burn & splashdown: buoy tipover steam",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 10 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-10 / tweet 1960178606212063307), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 10,
+  "mission_T_plus_s": 3993,
+  "webcast_offset_s": 6997.5,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_landing/ship_landing_IFT10_Tplus01h06m41s_buoy_explosion.png",
+  "category": "ship_landing",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1lPKqvNwLREGb",
+  "what_it_shows": "IFT-10 T+01:06:41 \u2014 ship flip, landing burn & splashdown: buoy explosion",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 10 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-10 / tweet 1960178606212063307), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 10,
+  "mission_T_plus_s": 4001,
+  "webcast_offset_s": 7005.5,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_landing/ship_landing_IFT11_Tplus01h06m11s_onboard_landing_burn_steam.png",
+  "category": "ship_landing",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1mrGmBjyEZgJy",
+  "what_it_shows": "IFT-11 T+01:06:11 \u2014 ship flip, landing burn & splashdown: onboard landing burn steam",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 11 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-11 / tweet 1972796063359647955), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 11,
+  "mission_T_plus_s": 3971,
+  "webcast_offset_s": 5995.4,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_landing/ship_landing_IFT11_Tplus01h06m31s_buoy_fireball_horizon.png",
+  "category": "ship_landing",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1mrGmBjyEZgJy",
+  "what_it_shows": "IFT-11 T+01:06:31 \u2014 ship flip, landing burn & splashdown: buoy fireball horizon",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 11 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-11 / tweet 1972796063359647955), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 11,
+  "mission_T_plus_s": 3991,
+  "webcast_offset_s": 6015.4,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_landing/ship_landing_IFT12_Tplus01h06m11s_aerial_landing_burn_vertical.png",
+  "category": "ship_landing",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1pKkOykQRgNKj",
+  "what_it_shows": "IFT-12 T+01:06:11 \u2014 ship flip, landing burn & splashdown: aerial landing burn vertical",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 12 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-12 / tweet 2057843268038082848), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 12,
+  "mission_T_plus_s": 3971,
+  "webcast_offset_s": 5916.1,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_landing/ship_landing_IFT12_Tplus01h06m31s_aerial_tipover_steam.png",
+  "category": "ship_landing",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1pKkOykQRgNKj",
+  "what_it_shows": "IFT-12 T+01:06:31 \u2014 ship flip, landing burn & splashdown: aerial tipover steam",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 12 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-12 / tweet 2057843268038082848), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 12,
+  "mission_T_plus_s": 3991,
+  "webcast_offset_s": 5936.0,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_landing/ship_landing_IFT12_Tplus01h06m41s_buoy_fireball_mushroom.png",
+  "category": "ship_landing",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1pKkOykQRgNKj",
+  "what_it_shows": "IFT-12 T+01:06:41 \u2014 ship flip, landing burn & splashdown: buoy fireball mushroom",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 12 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-12 / tweet 2057843268038082848), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [
+   [
+    1440,
+    40,
+    1900,
+    100
+   ]
+  ],
+  "flight": 12,
+  "mission_T_plus_s": 4001,
+  "webcast_offset_s": 5946.1,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). 'POWERED/VIEWS BY STARLINK' watermark top-right: mask overlay_mask_boxes_xyxy or crop to y>=100. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/booster/booster_IFT5_Tplus00h06m35s_descent_landing_burn_closeup.png",
+  "category": "booster",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlyognOgJL",
+  "what_it_shows": "IFT-5 T+00:06:35 \u2014 Super Heavy booster descent / landing burn / catch: descent landing burn closeup",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 5 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-5 / tweet 1845152255944819015), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 5,
+  "mission_T_plus_s": 395,
+  "webcast_offset_s": 2379.6,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/booster/booster_IFT5_Tplus00h06m45s_catch_approach_sunrise.png",
+  "category": "booster",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlyognOgJL",
+  "what_it_shows": "IFT-5 T+00:06:45 \u2014 Super Heavy booster descent / landing burn / catch: catch approach sunrise",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 5 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-5 / tweet 1845152255944819015), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 5,
+  "mission_T_plus_s": 405,
+  "webcast_offset_s": 2389.6,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/booster/booster_IFT5_Tplus00h06m55s_chopsticks_catch_engines_lit.png",
+  "category": "booster",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlyognOgJL",
+  "what_it_shows": "IFT-5 T+00:06:55 \u2014 Super Heavy booster descent / landing burn / catch: chopsticks catch engines lit",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 5 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-5 / tweet 1845152255944819015), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 5,
+  "mission_T_plus_s": 415,
+  "webcast_offset_s": 2399.6,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/booster/booster_IFT6_Tplus00h06m35s_gulf_landing_burn.png",
+  "category": "booster",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1RDGlydZAeOJL",
+  "what_it_shows": "IFT-6 T+00:06:35 \u2014 Super Heavy booster descent / landing burn / catch: gulf landing burn",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 6 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-6 / tweet 1857622520154960080), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 6,
+  "mission_T_plus_s": 395,
+  "webcast_offset_s": 2803.0,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/booster/booster_IFT7_Tplus00h06m21s_descent_engines_bottom_view.png",
+  "category": "booster",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1OwGWNYrzZVKQ",
+  "what_it_shows": "IFT-7 T+00:06:21 \u2014 Super Heavy booster descent / landing burn / catch: descent engines bottom view",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 7 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-7 / tweet 1879288668101497144), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 7,
+  "mission_T_plus_s": 381,
+  "webcast_offset_s": 2787.3,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/booster/booster_IFT7_Tplus00h06m39s_catch_approach_tower.png",
+  "category": "booster",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1OwGWNYrzZVKQ",
+  "what_it_shows": "IFT-7 T+00:06:39 \u2014 Super Heavy booster descent / landing burn / catch: catch approach tower",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 7 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-7 / tweet 1879288668101497144), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 7,
+  "mission_T_plus_s": 399,
+  "webcast_offset_s": 2805.3,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/booster/booster_IFT7_Tplus00h06m54s_in_chopsticks_steam.png",
+  "category": "booster",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1OwGWNYrzZVKQ",
+  "what_it_shows": "IFT-7 T+00:06:54 \u2014 Super Heavy booster descent / landing burn / catch: in chopsticks steam",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 7 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-7 / tweet 1879288668101497144), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 7,
+  "mission_T_plus_s": 414,
+  "webcast_offset_s": 2820.3,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/booster/booster_IFT8_Tplus00h06m35s_landing_burn_tracking.png",
+  "category": "booster",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1lPKqMQbAWLKb",
+  "what_it_shows": "IFT-8 T+00:06:35 \u2014 Super Heavy booster descent / landing burn / catch: landing burn tracking",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 8 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-8 / tweet 1896909928381768044), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 8,
+  "mission_T_plus_s": 395,
+  "webcast_offset_s": 2532.2,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/booster/booster_IFT8_Tplus00h06m55s_catch_at_tower.png",
+  "category": "booster",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1lPKqMQbAWLKb",
+  "what_it_shows": "IFT-8 T+00:06:55 \u2014 Super Heavy booster descent / landing burn / catch: catch at tower",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 8 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-8 / tweet 1896909928381768044), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   884
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 8,
+  "mission_T_plus_s": 415,
+  "webcast_offset_s": 2552.2,
+  "source_kind": "spacex_official_webcast",
+  "notes": "Old-style HUD strip (Flights 5-8) occupies y>=886; crop_box removes it. Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/booster/booster_IFT10_Tplus00h06m30s_gridfin_cam_over_gulf.png",
+  "category": "booster",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1lPKqvNwLREGb",
+  "what_it_shows": "IFT-10 T+00:06:30 \u2014 Super Heavy booster descent / landing burn / catch: gridfin cam over gulf",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 10 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-10 / tweet 1960178606212063307), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 10,
+  "mission_T_plus_s": 390,
+  "webcast_offset_s": 3394.2,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/booster/booster_IFT11_Tplus00h06m00s_descent_tracking.png",
+  "category": "booster",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1mrGmBjyEZgJy",
+  "what_it_shows": "IFT-11 T+00:06:00 \u2014 Super Heavy booster descent / landing burn / catch: descent tracking",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 11 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-11 / tweet 1972796063359647955), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 11,
+  "mission_T_plus_s": 360,
+  "webcast_offset_s": 2384.1,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/booster/booster_IFT11_Tplus00h06m20s_gulf_landing_burn.png",
+  "category": "booster",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://x.com/i/broadcasts/1mrGmBjyEZgJy",
+  "what_it_shows": "IFT-11 T+00:06:20 \u2014 Super Heavy booster descent / landing burn / catch: gulf landing burn",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded directly from SpaceX's official Starship Flight 11 webcast replay on X (uploader @SpaceX; broadcast linked from spacex.com mission page starship-flight-11 / tweet 1972796063359647955), 1080p 'replay-5500' HLS rendition, lossless PNG of the decoded H.264 frame. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   880
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 11,
+  "mission_T_plus_s": 380,
+  "webcast_offset_s": 2404.1,
+  "source_kind": "spacex_official_webcast",
+  "notes": "New-style HUD (Flights 9+): translucent bottom panel + arc timeline; crop_box removes it (panel/arc begins ~y=895). Mission T+ derived from HLS EXT-X-PROGRAM-DATE-TIME aligned to the on-screen HUD clock (accuracy about \u00b12 s); webcast_offset_s is seconds from the start of the replay."
+ },
+ {
+  "path": "refs/real/ship_space_earth/ship_space_earth_IFT13_officialclip_t00.5s_onboard_rotated_separating_vehicle_ocean.png",
+  "category": "ship_space_earth",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://sxcontent9668.azureedge.us/cms-assets/assets/Flight_13_Ship_in_Orbit_NX_20260724_1080_P_0f5ef8c02b.mp4",
+  "what_it_shows": "Flight 13 official clip (camera image rotated 90\u00b0): ship aft skirt/flap at left with orange engine glow; a separating vehicle with glowing engine bells enters at right; deep-blue ocean with cumulus below. Exact event (likely stage separation or deployment) not labelled by source.",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded from an official SpaceX 1080p video published on spacex.com (the CMS asset linked in the content.spacex.com mission JSON for starship-flight-13). It has no webcast HUD. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   1080
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 13,
+  "mission_T_plus_s": null,
+  "clip_time_s": 0.5,
+  "source_kind": "spacex_official_clip",
+  "notes": "No HUD overlay: the full frame is usable. Mission T+ is not given by the source."
+ },
+ {
+  "path": "refs/real/ship_space_earth/ship_space_earth_IFT13_officialclip_t02.5s_onboard_separating_vehicle_limb.png",
+  "category": "ship_space_earth",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://sxcontent9668.azureedge.us/cms-assets/assets/Flight_13_Ship_in_Orbit_NX_20260724_1080_P_0f5ef8c02b.mp4",
+  "what_it_shows": "Flight 13 official clip: ship aft section and flap, receding vehicle, Earth limb and black space, orange exhaust wisps.",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded from an official SpaceX 1080p video published on spacex.com (the CMS asset linked in the content.spacex.com mission JSON for starship-flight-13). It has no webcast HUD. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   1080
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 13,
+  "mission_T_plus_s": null,
+  "clip_time_s": 2.5,
+  "source_kind": "spacex_official_clip",
+  "notes": "No HUD overlay: the full frame is usable. Mission T+ is not given by the source."
+ },
+ {
+  "path": "refs/real/ship_space_earth/ship_space_earth_IFT13_officialclip_t05.0s_ship_aft_terminator_limb.png",
+  "category": "ship_space_earth",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://sxcontent9668.azureedge.us/cms-assets/assets/Flight_13_Ship_in_Orbit_NX_20260724_1080_P_0f5ef8c02b.mp4",
+  "what_it_shows": "Flight 13 official clip: ship aft section lit against black space, bright Earth limb with blue airglow at bottom-left.",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded from an official SpaceX 1080p video published on spacex.com (the CMS asset linked in the content.spacex.com mission JSON for starship-flight-13). It has no webcast HUD. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   1080
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 13,
+  "mission_T_plus_s": null,
+  "clip_time_s": 5.0,
+  "source_kind": "spacex_official_clip",
+  "notes": "No HUD overlay: the full frame is usable. Mission T+ is not given by the source."
+ },
+ {
+  "path": "refs/real/booster/booster_IFT5_officialclip_t01.0s_drone_descent_landing_burn_sunrise.png",
+  "category": "booster",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://sxcontent9668.azureedge.us/cms-assets/assets/Flight5_Booster_Catch_Andy_Drone_20241013_1080_Short_e1547e5356.mp4",
+  "what_it_shows": "Flight 5 official drone clip: Super Heavy B12 descending with landing burn and gas flames at its aft end, launch tower with chopsticks, sunrise over the Gulf. Webcast equivalent about T+00:06:45.",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded from an official SpaceX 1080p video published on spacex.com (the CMS asset linked in the content.spacex.com mission JSON for starship-flight-5). It has no webcast HUD. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   1080
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 5,
+  "mission_T_plus_s": null,
+  "clip_time_s": 1.0,
+  "source_kind": "spacex_official_clip",
+  "notes": "No HUD overlay: the full frame is usable. Mission T+ is not given by the source."
+ },
+ {
+  "path": "refs/real/booster/booster_IFT5_officialclip_t07.0s_drone_chopsticks_approach.png",
+  "category": "booster",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://sxcontent9668.azureedge.us/cms-assets/assets/Flight5_Booster_Catch_Andy_Drone_20241013_1080_Short_e1547e5356.mp4",
+  "what_it_shows": "Flight 5 official drone clip: booster sliding into the chopsticks with its landing burn plume, deluge/steam clouds, sunrise ocean.",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded from an official SpaceX 1080p video published on spacex.com (the CMS asset linked in the content.spacex.com mission JSON for starship-flight-5). It has no webcast HUD. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   1080
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 5,
+  "mission_T_plus_s": null,
+  "clip_time_s": 7.0,
+  "source_kind": "spacex_official_clip",
+  "notes": "No HUD overlay: the full frame is usable. Mission T+ is not given by the source."
+ },
+ {
+  "path": "refs/real/booster/booster_IFT5_officialclip_t15.0s_drone_caught_engines_burning.png",
+  "category": "booster",
+  "source_repo": null,
+  "source_path": null,
+  "original_url_if_known": "https://sxcontent9668.azureedge.us/cms-assets/assets/Flight5_Booster_Catch_Andy_Drone_20241013_1080_Short_e1547e5356.mp4",
+  "what_it_shows": "Flight 5 official drone clip: booster caught by the tower arms, residual fire at the engine section, steam clouds, dawn light.",
+  "width": 1920,
+  "height": 1080,
+  "verified_real_reason": "Frame decoded from an official SpaceX 1080p video published on spacex.com (the CMS asset linked in the content.spacex.com mission JSON for starship-flight-5). It has no webcast HUD. Visually checked.",
+  "crop_box_xyxy": [
+   0,
+   0,
+   1920,
+   1080
+  ],
+  "overlay_mask_boxes_xyxy": [],
+  "flight": 5,
+  "mission_T_plus_s": null,
+  "clip_time_s": 15.0,
+  "source_kind": "spacex_official_clip",
+  "notes": "No HUD overlay: the full frame is usable. Mission T+ is not given by the source."
  }
 ]

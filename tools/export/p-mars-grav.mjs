@@ -21,8 +21,10 @@ export function computeMarsGrav() {
     escape_velocity_kms: O.measureEscapeVelocity(MARS, MARS.rMean, { lat: O.MEAN_LAT }) / 1e3,
     circular_speed_200km_kms: vc / 1e3,
     period_200km_min: O.measureCircularPeriod(MARS, r200, { speed: vc, j2: false }) / 60,
-    phobos_period_h: O.measureCircularPeriod(MARS, phobos.a) / 3600,
-    deimos_period_h: O.measureCircularPeriod(MARS, deimos.a) / 3600,
+    // moons: eccentric orbit with the published mean distance, J2 field,
+    // sidereal period from the fitted mean longitude rate
+    phobos_period_h: O.measureSatellitePeriod(MARS, { meanDistance: phobos.a, e: phobos.e, inc: phobos.inc }) / 3600,
+    deimos_period_h: O.measureSatellitePeriod(MARS, { meanDistance: deimos.a, e: deimos.e, inc: deimos.inc }) / 3600,
     sidereal_day_h: O.measureSiderealDay(MARS) / 3600,
     areostationary_radius_km: O.measureStationaryRadius(MARS) / 1e3,
     j2_nodal_precession_200km_deg_per_day:

@@ -84,3 +84,26 @@ test('CSV export matches the reference format', () => {
   const pat = /^\d+\.\d{2},\d+\.\d{2},\d+\.\d{2},\d+\.\d$/;
   for (const l of csv.slice(1)) assert.match(l, pat);
 });
+
+test('keep-warm heaters follow the rover body temperature: sleep load drops after sunrise', () => {
+  const at = (h) => Math.round(h * 3600 / sim.dt);
+  const pre = sim.load[at(5)], dawn = sim.load[at(8.3)], aft = sim.load[at(16.5)];
+  assert.ok(pre - dawn > 3, `pre-dawn ${pre} vs morning ${dawn}`);
+  assert.ok(aft < pre - 8, `afternoon sleep ${aft} vs night ${pre}`);
+  const rate = (a, b) => (sim.soc[at(b)] - sim.soc[at(a)]) / (b - a);
+  assert.ok(rate(7.5, 8.5) > rate(0, 3), 'charge rate rises in the morning as heaters shut off');
+  // MMRTG output responds to the diurnal sink temperature (Curiosity: ~109-119 W)
+  assert.ok(table.mmrtg_power_W_max - table.mmrtg_power_W_min > 1.5);
+});
+
+test('scheduled activity blocks: piecewise-constant load, straight SOC segments, events on the 15-min grid', () => {
+  const soc = rows.map((r) => r.battery_soc_pct);
+  const iPeak = soc.indexOf(Math.max(...soc.slice(0, 50)));
+  const iMin = soc.indexOf(Math.min(...soc));
+  assert.ok(Math.abs(rows[iPeak].time_h - 8.5) < 0.26, `peak at ${rows[iPeak].time_h}`);
+  assert.ok(Math.abs(rows[iMin].time_h - 15.0) < 0.26, `min at ${rows[iMin].time_h}`);
+  // Within the drive the SOC slope is constant to within 0.4 %/h per 15 min.
+  const d = [];
+  for (let i = 0; i < rows.length - 1; i++) if (rows[i].time_h >= 11.5 && rows[i + 1].time_h <= 13.5) d.push((soc[i + 1] - soc[i]) / 0.25);
+  assert.ok(Math.max(...d) - Math.min(...d) < 0.4, `drive slope spread ${Math.max(...d) - Math.min(...d)}`);
+});

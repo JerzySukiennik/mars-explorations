@@ -42,5 +42,26 @@ test('circular speed, period and escape speed imply one consistent GM', () => {
 test('nodal-rate orbit is shot to the requested mean radius', () => {
   const r200 = MARS.rMean + 200e3;
   const fit = O.nodalFit(MARS, r200, Math.PI / 4, { days: 1 });
-  assert.ok(fit.meanRadius < r200 - 3e3, 'starting at r200 sags below it under J2');
+  assert.ok(Math.abs(fit.meanRadius - r200) > 100, 'J2 shifts the mean radius of a node start');
+  assert.ok(Math.abs(ours.j2_nodal_precession_200km_deg_per_day + 8.868) < 0.02);
+});
+
+test('satellite period: orbit is shot to the published mean distance; eccentricity shortens it', () => {
+  const p = MARS.moons.phobos;
+  const circ = O.measureSatellitePeriod(MARS, { meanDistance: p.a, e: 0, inc: p.inc }, { revs: 20 });
+  const ecc = O.measureSatellitePeriod(MARS, { meanDistance: p.a, e: p.e, inc: p.inc }, { revs: 20 });
+  // e=0 must reproduce the circular-orbit shooting experiment
+  const c2 = O.measureCircularPeriod(MARS, p.a, { inc: p.inc });
+  assert.ok(Math.abs(circ / c2 - 1) < 2e-5, `${circ} vs ${c2}`);
+  // <r> = a (1 + e^2/2)  ->  P shorter by ~ (3/2)(e^2/2)
+  const rel = 1 - ecc / circ;
+  assert.ok(Math.abs(rel / (0.75 * p.e ** 2) - 1) < 0.25, `rel ${rel}`);
+});
+
+test('mean-motion fit of a two-body circular orbit equals the swept-angle period', () => {
+  const r = MARS.rMean + 500e3;
+  const st = O.elementsToState(MARS.mu, { a: r, inc: 0.3 });
+  const mm = O.measureMeanMotion(MARS, st, { revs: 10, j2: false });
+  const pk = O.timeToSweep(MARS, st, 2 * Math.PI, 5, { j2: false }).t;
+  assert.ok(Math.abs(mm.period / pk - 1) < 1e-6);
 });

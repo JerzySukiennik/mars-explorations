@@ -52,7 +52,7 @@ export const ROVER = Object.freeze({
   driveEfficiency: 0.22,           // motor x planetary/harmonic gear at cold temp
   steerAvg_W: 10,                  // steering actuators averaged over a drive
   brakeRelease_W: 20,              // wheel/steer brakes held open while moving
-  motorController_W: 40,           // RMC electronics on during mobility
+  motorController_W: 55,           // RMC motor drivers + encoders/resolvers powered for mobility
   vce_W: 25,                       // Vision Compute Element (AutoNav stereo/VO)
   driveCameras_W: 8,               // Navcam + Hazcams imaging while driving
   // AutoNav: the rover images and runs visual odometry every stepLength_m;
@@ -86,8 +86,12 @@ export function motorPower(slopeDeg, r = ROVER) {
 }
 
 /** Representative undulating terrain: slope (deg, + uphill) vs distance. */
+// Metre-scale relief (ripples, rock-to-rock undulation) on a gentle regional
+// grade: the rover crosses many wavelengths in a few minutes, so its average
+// mobility power over any operations interval is set by the regional grade
+// and the roughness amplitude, not by where along a hill it happens to be.
 export function terrainSlope(x_m, base = 2) {
-  return base + 4 * Math.sin(2 * Math.PI * x_m / 57) + 2.5 * Math.sin(2 * Math.PI * x_m / 19 + 1.1);
+  return base + 4 * Math.sin(2 * Math.PI * x_m / 3.7) + 2.5 * Math.sin(2 * Math.PI * x_m / 1.3 + 1.1);
 }
 
 /** Time (s) to traverse one AutoNav step starting at x. */
@@ -173,7 +177,11 @@ export function makeClimate(site = SITE, dt = 60) {
     const u = (((t_h / SOL_H) % 1) + 1) % 1 * n;
     const i = Math.floor(u), f = u - i;
     const T = series[i] * (1 - f) + series[(i + 1) % n] * f;
-    return { Ts: T, Tair: Tmean - 8 + site.airCoupling * (T - Tmean), Tsky };
+    const tl = (((t_h / SOL_H) % 1) + 1) % 1 * SOL_H;
+    const mu = cosZenith(tl, site);
+    // Direct-normal beam (for sunlit vertical rover sides) and its elevation.
+    const dni = mu > 0 ? S0 * Math.exp(-site.tau / Math.max(mu, 0.05)) : 0;
+    return { Ts: T, Tair: Tmean - 8 + site.airCoupling * (T - Tmean), Tsky, insol: insol(tl), dni, mu: Math.max(0, mu) };
   };
 }
 
@@ -184,8 +192,15 @@ export const MMRTG = Object.freeze({
   coupleDegradation_per_yr: 0.025, // TE sublimation / contact resistance growth
   hotJunction_K: 803,              // ~530 C at design heat flux
   coldJunction_K: 483,             // ~210 C at design heat flux
-  zt: 0.55,                        // device-average figure of merit PbTe/TAGS
-  finArea_m2: 2.0,                 // effective radiating area of the 8 fins
+  zt: 0.80,                        // device-average figure of merit PbTe/TAGS
+  // Part of the heat-source output leaks around the couples through the
+  // Min-K/microtherm insulation. At ~500-800 K that leak is largely
+  // radiative (conductance ~ T^3), so a colder sink moves the couple mean
+  // temperature down, cuts the leak and pushes more heat through the couples:
+  // this is why the MMRTG makes ~125 W in deep space and less on Mars.
+  bypassFraction: 0.20,            // share of Q leaking around couples at design
+  finArea_m2: 1.3,                 // effective radiating area of the 8 fins (fin efficiency and
+                                   // fin-to-fin view blockage included)
   finEmissivity: 0.9,
   hConv: 1.5,                      // W/m^2/K forced CO2 convection at ~5 m/s
   finToColdJunction_K_per_W: 0.05,
@@ -210,9 +225,17 @@ function mmrtgAge(sol, m = MMRTG) {
 /** Electrical output (W) given cold-junction temperature and mission age. */
 export function mmrtgElectrical(Tc, sol = 0, m = MMRTG) {
   const { Q, degr } = mmrtgAge(sol, m);
-  // Couple conductance fixed: temperature drop scales with heat through them.
-  const dT = (m.hotJunction_K - m.coldJunction_K) * Q / m.thermalBOL_W;
-  return Q * teEfficiency(Tc + dT, Tc, m.zt) * degr;
+  // Heat balance at the hot shoe: Q = K (Th - Tc) + Kr (Th^4 - Tc^4), with
+  // K (couples) and Kr (radiative insulation leak) set at the design point.
+  const Th0 = m.hotJunction_K, Tc0 = m.coldJunction_K, Q0 = m.thermalBOL_W;
+  const K = (1 - m.bypassFraction) * Q0 / (Th0 - Tc0);
+  const Kr = m.bypassFraction * Q0 / (Th0 ** 4 - Tc0 ** 4);
+  let Th = Tc + (Th0 - Tc0);
+  for (let k = 0; k < 20; k++) {
+    const f = K * (Th - Tc) + Kr * (Th ** 4 - Tc ** 4) - Q;
+    Th -= f / (K + 4 * Kr * Th ** 3);
+  }
+  return K * (Th - Tc) * teEfficiency(Th, Tc, m.zt) * degr;
 }
 
 /** Steady fin temperature for a heat load and environment (Newton solve). */
@@ -289,22 +312,27 @@ export function batteryEnergyWh(b = BATTERY) {
   return e * b.capacityAh * b.count;
 }
 
+/** Battery pack bookkept the way the flight power-management software and
+ * the ground planners do it: as energy (Wh) against the pack's rated energy.
+ * Charge goes in through the shunt regulator at the charge acceptance; I^2 R
+ * loss in the cells is taken on both charge and discharge. */
 export function createBattery({ soc = 0.75, b = BATTERY } = {}) {
-  const cap = b.capacityAh * b.count; // Ah on the bus (parallel)
-  let q = soc * cap;
+  const Emax = batteryEnergyWh(b);
+  let E = soc * Emax;
   const R = b.cellResistance_ohm * b.cellsSeries / b.count;
   return {
-    get soc() { return q / cap; },
-    get voltage() { return cellOCV(q / cap) * b.cellsSeries; },
+    get soc() { return E / Emax; },
+    get energyWh() { return E; },
+    get voltage() { return cellOCV(E / Emax) * b.cellsSeries; },
     /** Apply net bus power (W, + charging) for dt seconds; returns power shunted. */
     step(Pnet, dt) {
-      const V = cellOCV(q / cap) * b.cellsSeries;
-      // Terminal: Pnet = I (V + I R)  ->  solve for I (sign follows Pnet).
-      const I = (-V + Math.sqrt(V * V + 4 * R * Pnet)) / (2 * R);
-      let dq = (I > 0 ? I * b.chargeAcceptance : I) * dt / 3600;
+      const V = cellOCV(E / Emax) * b.cellsSeries;
+      const I = Pnet / V;
+      const loss = I * I * R;
+      let dE = (Pnet > 0 ? (Pnet - loss) * b.chargeAcceptance : Pnet - loss) * dt / 3600;
       let shunt = 0;
-      if (q + dq > cap) { shunt = (q + dq - cap) / (dq || 1) * Pnet; dq = cap - q; }
-      q = Math.max(0, q + dq);
+      if (E + dE > Emax) { shunt = (E + dE - Emax) / (dE || 1) * Pnet; dE = Emax - E; }
+      E = Math.max(0, E + dE);
       return shunt;
     },
   };
@@ -313,14 +341,28 @@ export function createBattery({ soc = 0.75, b = BATTERY } = {}) {
 // ------------------------------------------------------------------ loads --
 export const LOADS = Object.freeze({
   sleepBase_W: 44,               // power electronics, clocks, HRS pump, RTC
-  survivalSetpoint_K: 233,       // electronics / battery keep-warm (-40 C)
-  survivalGain_W_per_K: 0.35,
-  awakeAvionics_W: 110,          // added when awake: RCE, avionics, telecom idle
+  // Survival/keep-warm heaters are thermostatted on the rover body, which sees
+  // the air AND sunlight on the deck, through the body's thermal lag.
+  survivalSetpoint_K: 238,       // equivalent sink temperature at which heaters idle
+  survivalGain_W_per_K: 0.40,
+  deckAbsorptivity: 0.35,        // dusty white deck / RTG shield
+  deckFilm_W_m2K: 5,             // radiation (~2.5) + CO2 convection (~2.5) from the deck
+  sideToDeckArea: 0.6,           // sunward vertical faces (body sides, RTG shroud) per deck area
+  bodyTimeConstant_h: 0.6,       // thermostatted boxes behind insulation
+  awakeAvionics_W: 120,          // added when awake: RCE (~70 W), PDUs/converter loss, IMU, telecom idle
   actuatorSetpoint_K: 218,       // -55 C minimum operating for gearboxes
-  actuatorGain_W_per_K: 3.0,
+  actuatorGain_W_per_K: 3.0,     // (cold-case coring load only)
   actuatorHeaterMax_W: 150,
+  // Pre-drive/arm actuator warm-up: fixed-resistance heater strings switched
+  // fully on by the sequence, for a duration the ground computes from the
+  // predicted actuator temperature (MSL/M2020 "preheat" practice).
+  preheat_W: 110,
+  preheatTarget_K: 233,          // -40 C: gearbox lubricant warm enough to move
+  actuatorHeatCapacity_J_K: 6000,// wheel/steer/arm gearbox + motor thermal mass
+  actuatorLoss_W_per_K: 0.6,     // conduction/radiation from the warm actuators
   uhfTx_W: 38,                   // Electra-Lite transmitting
   xbandTx_W: 95,                 // SSPA for direct-to-Earth
+  xbandRx_W: 15,                 // SDST receiver/command detector only (uplink, no downlink)
   imaging_W: 25,                 // Mastcam-Z + Navcams
   remoteScience_W: 40,           // SuperCam / MEDA / Mastcam-Z sequence
   arm_W: 85,                     // arm joints + contact instrument (PIXL/SHERLOC)
@@ -328,32 +370,54 @@ export const LOADS = Object.freeze({
   sampleHandling_W: 60,          // Adaptive Caching Assembly (tube handling arm, seal)
 });
 
-const survivalHeater = (Tair, L = LOADS) => Math.max(0, (L.survivalSetpoint_K - Tair) * L.survivalGain_W_per_K);
+const survivalHeater = (Tbody, L = LOADS) => Math.max(0, (L.survivalSetpoint_K - Tbody) * L.survivalGain_W_per_K);
+
+/** Equivalent sink temperature of the rover body (K): air plus solar heating
+ * of the deck balanced against its radiative/convective film coefficient. */
+export function bodySinkTemp(c, L = LOADS) {
+  // Absorbed flux per deck area: horizontal deck (direct + diffuse) plus the
+  // sunward vertical faces, which catch the low morning/evening beam.
+  const side = L.sideToDeckArea * (c.dni ?? 0) * Math.sqrt(Math.max(0, 1 - (c.mu ?? 1) ** 2)) / Math.PI;
+  return c.Tair + L.deckAbsorptivity * ((c.insol ?? 0) + side) / L.deckFilm_W_m2K;
+}
 const actuatorHeater = (Tair, L = LOADS) =>
   Math.min(L.actuatorHeaterMax_W, Math.max(0, (L.actuatorSetpoint_K - Tair) * L.actuatorGain_W_per_K));
 
 /** Load (W) for an activity mode at an air temperature. `drive` gives the
  * instantaneous mobility state {moving, slopeDeg}. */
-export function activityLoad(mode, Tair, drive = null, L = LOADS, r = ROVER) {
-  const sleep = L.sleepBase_W + survivalHeater(Tair, L);
-  if (mode === 'sleep') return sleep;
-  const awake = sleep + L.awakeAvionics_W;
+export function activityLoad(mode, Tair, drive = null, L = LOADS, r = ROVER, Tbody = Tair) {
+  if (mode === 'sleep') return L.sleepBase_W + survivalHeater(Tbody, L);
+  // Awake, the RCE/avionics dissipate >100 W inside the warm electronics box,
+  // which holds it above the survival-heater thermostats: those heaters
+  // stay off and each activity is a fixed set of powered units.
+  const awake = L.sleepBase_W + L.awakeAvionics_W;
   switch (mode) {
     case 'wake': return awake;
     case 'uhf': return awake + L.uhfTx_W;
-    case 'dte': return awake + L.xbandTx_W + actuatorHeater(Tair + 10, L); // pre-heat for the drive
+    case 'uplink': return awake + L.xbandRx_W; // actuator preheat is added by the sequencer
+    case 'dte': return awake + L.xbandTx_W;
     case 'imaging': return awake + L.imaging_W;
     case 'remote': return awake + L.remoteScience_W + L.imaging_W * 0.5;
-    case 'arm': return awake + L.arm_W + actuatorHeater(Tair, L);
+    case 'arm': return awake + L.arm_W;
     case 'coring': return awake + L.arm_W + L.drill_W + L.sampleHandling_W + actuatorHeater(Tair, L)
       + L.xbandTx_W + L.imaging_W + L.remoteScience_W;
     case 'drive': {
-      let p = awake + r.motorController_W + r.vce_W + r.driveCameras_W + actuatorHeater(Tair, L);
+      let p = awake + r.motorController_W + r.vce_W + r.driveCameras_W;
       if (drive && drive.moving) p += motorPower(drive.slopeDeg, r) + r.brakeRelease_W;
       return p;
     }
     default: throw new Error(`unknown mode ${mode}`);
   }
+}
+
+/** Heater-on time (h) to warm actuators from Tair to the preheat target at
+ * the fixed heater power, with linear losses to the environment. */
+export function preheatDuration_h(Tair, L = LOADS) {
+  const dT = L.preheatTarget_K - Tair;
+  if (dT <= 0) return 0;
+  const x = L.actuatorLoss_W_per_K * dT / L.preheat_W;
+  if (x >= 1) return Infinity;
+  return -L.actuatorHeatCapacity_J_K / L.actuatorLoss_W_per_K * Math.log(1 - x) / 3600;
 }
 
 /** Highest load the model can command: coring with the arm, caching system,
@@ -364,24 +428,28 @@ export function peakLoad(L = LOADS, Tair = 150) {
 }
 
 // ------------------------------------------------------------ sol timeline --
-/** A typical drive sol, in LOCAL MEAN SOLAR hours (converted to Earth hours
- * below). Drive length is a distance goal; its duration comes out of the
- * AutoNav simulation. */
+/** A typical drive sol as the uplinked sequence runs it: each block is a
+ * command window on the rover clock, in Earth hours since local midnight
+ * (the same clock as the exported time_h), laid out on the 15-minute grid
+ * the tactical planners use for activity windows. Each window switches a
+ * fixed set of powered units on for its whole length, so the bus load is
+ * piecewise constant with steps at the window edges. The drive is
+ * time-boxed (AutoNav drives "until the time-out" when the distance goal is
+ * beyond reach); the distance comes out of the AutoNav simulation. */
 export const DRIVE_SOL_PLAN = Object.freeze([
-  { at: 3.35, mode: 'uhf', dur: 0.42 },        // pre-dawn orbiter relay
-  { at: 8.95, mode: 'wake', dur: 0.20 },       // boot, health check
-  { at: 9.15, mode: 'dte', dur: 0.75 },        // X-band uplink + actuator pre-heat
-  { at: 9.90, mode: 'arm', dur: 0.45 },        // proximity science at the workspace
-  { at: 10.35, mode: 'remote', dur: 0.80 },    // remote sensing
-  { at: 11.15, mode: 'imaging', dur: 0.20 },   // pre-drive imaging
-  { at: 11.35, mode: 'drive', distance_m: 270, maxDur: 3.0 },
-  { mode: 'imaging', dur: 0.55 },              // post-drive workspace/mosaic
-  { mode: 'remote', dur: 0.75 },               // post-drive remote sensing / atmospheric obs
-  { mode: 'uhf', dur: 0.35 },                  // afternoon relay pass
-  { at: 20.40, mode: 'uhf', dur: 0.40 },       // evening relay pass
+  { at: 3.50, mode: 'uhf', dur: 0.50 },        // pre-dawn orbiter relay (MRO/TGO overflight)
+  { at: 8.50, mode: 'uplink', dur: 1.00 },     // wake, X-band uplink receive + actuator pre-heat
+  { at: 9.50, mode: 'arm', dur: 0.75 },        // proximity science at the workspace
+  { at: 10.25, mode: 'remote', dur: 0.75 },    // remote sensing
+  { at: 11.00, mode: 'imaging', dur: 0.25 },   // pre-drive imaging
+  { at: 11.25, mode: 'drive', distance_m: 400, maxDur: 2.50 },
+  { mode: 'imaging', dur: 0.75 },              // post-drive workspace/mosaic imaging
+  { mode: 'uhf', dur: 0.50 },                  // afternoon relay pass (drive data downlink)
+  { at: 20.50, mode: 'uhf', dur: 0.50 },       // evening relay pass
 ]);
 
-const LMST_TO_EARTH_H = SOL_H / 24;
+/** Sequence command granularity (h): heater on-times are rounded up to it. */
+export const SEQ_GRID_H = 0.25;
 
 /**
  * Simulate one sol. Returns a sampler plus per-step arrays.
@@ -401,15 +469,24 @@ export function simulateSol(opts = {}) {
   const bat = createBattery({ soc: (opts.socStart ?? 75) / 100 });
 
   // Resolve plan into absolute Earth-hour windows (drive end set during sim).
-  const acts = plan.map((a) => ({ ...a, start: a.at != null ? a.at * LMST_TO_EARTH_H : null }));
+  const acts = plan.map((a) => ({ ...a, start: a.at != null ? a.at : null }));
   let cursor = 0;
   for (const a of acts) {
     if (a.start == null) a.start = cursor;
-    a.end = a.mode === 'drive' ? Infinity : a.start + a.dur * LMST_TO_EARTH_H;
+    a.end = a.mode === 'drive' ? Infinity : a.start + a.dur;
     cursor = a.end;
   }
   const out = { t_h: [], soc: [], mmrtg: [], load: [], mode: [], x_m: [], Tair: [] };
   let x = 0, stepLeft = 0, stopLeft = 0, driveDone = false, driveStats = null;
+  // Actuator preheat: the sequence switches the heater strings on at the
+  // start of the uplink block for the time needed to bring the gearboxes from
+  // the predicted air temperature to the target, then off.
+  let preheatEnd = null;
+  // Rover body thermal state: relax toward the sink temperature, spun up
+  // over the previous sol so t = 0 starts on the periodic cycle.
+  const tauB = LOADS.bodyTimeConstant_h * 3600;
+  let Tbody = bodySinkTemp(climate(0));
+  for (let t = -SOL_S; t < 0; t += dt) Tbody += (bodySinkTemp(climate(t / 3600 + SOL_H)) - Tbody) * dt / tauB;
   for (let i = 0; i * dt <= tEnd * 3600 + 1e-6; i++) {
     const t = i * dt / 3600;
     const c = climate(t);
@@ -418,14 +495,14 @@ export function simulateSol(opts = {}) {
     let drv = null;
     if (mode === 'drive') {
       if (!driveStats) { driveStats = { start: t, dist: 0 }; stepLeft = r.stepLength_m; stopLeft = 0; }
-      const tooLong = (t - act.start) >= act.maxDur * LMST_TO_EARTH_H;
+      const tooLong = (t - act.start) >= act.maxDur - 1e-9;
       if (x >= act.distance_m || tooLong) {
         // Drive complete: close its window and shift later untimed activities.
         act.end = t; driveDone = true; driveStats.end = t; driveStats.dist = x;
         let cur = t;
         for (const a of acts.slice(acts.indexOf(act) + 1)) {
           if (plan[acts.indexOf(a)].at != null) break;
-          a.start = cur; a.end = cur + a.dur * LMST_TO_EARTH_H; cur = a.end;
+          a.start = cur; a.end = cur + a.dur; cur = a.end;
         }
         act = acts.find((a) => t >= a.start && t < a.end);
         mode = act ? act.mode : 'sleep';
@@ -442,17 +519,26 @@ export function simulateSol(opts = {}) {
           if (stepLeft <= 1e-9) { stepLeft = r.stepLength_m; stopLeft = r.stopPerStep_s; }
         }
         const f = moving / dt;
-        const pMove = activityLoad('drive', c.Tair, { moving: true, slopeDeg: slope });
-        const pStop = activityLoad('drive', c.Tair, { moving: false, slopeDeg: slope });
+        const pMove = activityLoad('drive', c.Tair, { moving: true, slopeDeg: slope }, LOADS, r, Tbody);
+        const pStop = activityLoad('drive', c.Tair, { moving: false, slopeDeg: slope }, LOADS, r, Tbody);
         drv = f * pMove + (1 - f) * pStop;
       }
     }
-    const load = drv ?? activityLoad(mode, c.Tair);
+    let load = drv ?? activityLoad(mode, c.Tair, null, LOADS, r, Tbody);
+    if (mode === 'uplink') {
+      if (preheatEnd == null) {
+        // Ground predicts the heater time from the forecast air temperature
+        // and commands it in whole sequence steps (rounded up for margin).
+        preheatEnd = t + Math.ceil(preheatDuration_h(c.Tair) / SEQ_GRID_H - 1e-9) * SEQ_GRID_H;
+      }
+      if (t < preheatEnd) load += LOADS.preheat_W;
+    }
     const P = gen.power;
     out.t_h.push(t); out.soc.push(bat.soc * 100); out.mmrtg.push(P); out.load.push(load);
     out.mode.push(mode); out.x_m.push(x); out.Tair.push(c.Tair);
     bat.step(P - load, dt);
     gen.step(dt, t + dt / 3600);
+    Tbody += (bodySinkTemp(c) - Tbody) * dt / tauB;
   }
   out.drive = driveStats;
   out.dt = dt;

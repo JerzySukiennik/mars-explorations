@@ -43,10 +43,18 @@ if (shotId) {
   (ctx.render || (() => renderer.render(ctx.scene, ctx.camera)))();
   window.__SHOT_READY = true;
 } else {
+  // Play mode: the gameplay layer (src/game/play.js) wraps the visual scene with
+  // input, HUD, sim stepping and camera control. It calls ctx.update itself.
+  // If it fails to load, the scene still runs on its own.
+  let game = null;
+  try {
+    const play = await import('./game/play.js');
+    game = await play.attach({ ctx, renderer, THREE, sceneId, params });
+  } catch (e) { console.error('[game] gameplay layer failed to attach', e); }
   let last = performance.now();
   renderer.setAnimationLoop((t) => {
     const dt = Math.min(0.1, (t - last) / 1000); last = t;
-    ctx.update?.(dt);
+    if (game) game.update(dt); else ctx.update?.(dt);
     (ctx.render || (() => renderer.render(ctx.scene, ctx.camera)))();
   });
 }

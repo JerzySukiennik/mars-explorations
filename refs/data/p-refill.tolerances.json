@@ -1,0 +1,43 @@
+{
+  "_comment": "Tolerances for piece p-refill (Starship orbital refilling), compared against p-refill.real.json. Ship-to-ship Starship propellant transfer has NOT been flown as of 2026-09 (NASA OIG IG-26-004, Mar 2026: the vehicle-to-vehicle test slipped to 2026; press reports say none by Flight 13, Jul 2026). So only flight3_transfer_demo_t is a flown quantity, and its exact mass was never published. The rest are official statements, contract documents or engineering estimates, and several disagree. Pass rule: sim value inside [min,max] when 'range' is given. Otherwise use |sim-value| <= tol_abs, or |sim/value-1| <= tol_rel.",
+  "ship_prop_capacity_t": {
+    "value": 1500, "tol_abs": 300, "range": [1200, 1650],
+    "source_url": "https://space.skyrocket.de/doc_lau/super-heavy-starship.htm",
+    "note": "Ship Block 1 holds about 1200 t of propellant and Block 2 about 1500 t (Gunter's Space Page, SpaceX figures). V3/Block 3 is larger again but SpaceX has published no exact number, so the range is 1200 t to about 1650 t. The 1200 t figure is also the basis of Musk's 2021 '4 to 8 tankers' arithmetic."
+  },
+  "prop_per_tanker_t": {
+    "value": 150, "tol_rel": 0.35, "range": [100, 200],
+    "source_url": "https://www.teslarati.com/spacex-how-to-refuel-starships-in-space/",
+    "note": "Musk (2021) implied about 150 t per tanker: '~150 t to orbit, max 8 to fill 1200 t'. SpaceX's reusable V3 target is 100+ t to LEO. Tanker variant descriptions give up to about 200 t of 'orbital refilling'. A NASA-attributed estimate gives 100-150 t per tanker. The range is wide because the delivered mass depends on the vehicle version and is not demonstrated."
+  },
+  "tankers_for_full_fill": {
+    "value": 12, "range": [8, 20],
+    "source_url": "https://oig.nasa.gov/wp-content/uploads/2026/03/final-report-ig-26-004-nasas-management-of-the-human-landing-system-contracts.pdf",
+    "note": "Sources disagree widely. NASA OIG IG-26-004 (Mar 2026): 'more than 10 Starship tankers', one launch every 6 days. SpaceX's Gerstenmaier (2024): '10-ish'. NASA's L. Hawkins (Nov 2023): 'high teens', about 20 launches in total including the depot and HLS, driven by boil-off. Earlier OIG: 10-20. Musk (2021): 4 to 8, where 4 is only a half fill for the lunar HLS, so the low bound is 8 for a FULL fill. Capacity / per-tanker load gives 1500/150 = 10 and 1200/100 = 12, and boil-off and transfer losses push it higher. The count is an integer, so compare it after rounding."
+  },
+  "flight3_transfer_demo_t": {
+    "value": 10, "tol_abs": 2, "range": [8, 12],
+    "source_url": "https://ntrs.nasa.gov/api/citations/20230018652/downloads/AIAA_Scitech_Kenny_12272024_PDF.pdf",
+    "note": "NASA CFMP Tipping Point summary (Kenny, AIAA SciTech): the demonstration moves cryogenic fluid 'up to 10 metric tons' between the header tank and the main tank, with an active settling manoeuvre first. Press wording is 'at least 10 t of LOX'. On IFT-3 (2024-03-14) the transfer started about T+24 min. NASA (Kshatriya, Chojnacki IEEE Aero 2025) called it successful, but SpaceX has not published the exact mass. Hence +/-2 t."
+  },
+  "transfer_rate_t_per_min": {
+    "value": 5, "tol_rel": 1.0, "range": [1, 20],
+    "source_url": "https://www.teslarati.com/spacex-how-to-refuel-starships-in-space/",
+    "note": "There is NO measured or officially stated ship-to-ship rate. The value is an engineering estimate: '1000+ tons in a handful of hours' with 20-50 cm lines (Teslarati analysis, not SpaceX), giving about 3-8 t/min. It is kept consistent with full_transfer_time_h (1500 t / 5 t/min = 5 h). The range is very wide, about a factor of 4 each way, and should be checked in log space."
+  },
+  "full_transfer_time_h": {
+    "value": 5, "range": [1.5, 24],
+    "source_url": "https://www.teslarati.com/spacex-how-to-refuel-starships-in-space/",
+    "note": "Time to move a full ship load (1200-1500 t) from depot to ship: 'a handful of hours' (engineering estimate). The upper bound of 24 h comes from the NASA Tipping Point plan of a '~1 day mission duration' for the 10 t intra-ship demo, which is an upper envelope that includes chilldown and settling. The OIG (2026) cadence of 1 tanker per 6 days means the transfer time does not limit the campaign. Unverified by flight, so the range is wide."
+  },
+  "boiloff_pct_per_day": {
+    "value": 0.1, "range": [0.016, 1.0],
+    "source_url": "https://www.sciencedirect.com/science/article/abs/pii/S0094576514001738",
+    "note": "Depot thermal analysis (Acta Astronautica 2014) used passive LEO rates of LOX 0.025 %/day, CH4 0.08 %/day, LH2 0.1 %/day. The best LOX estimates are about 0.016 %/day. Minimally insulated tanks in orbit run 0.1-0.4 %/day or more (IOP review 2025). No Starship value is published. NASA (Hawkins 2023) and GAO (Nov 2023) name boil-off as the reason for the 'high teens' launch count and for fast cadence. Starship has no MLI and sits in the LEO thermal environment, so the upper end is plausible. Log-scale range of about a factor of 10."
+  },
+  "settling_accel_mms2": {
+    "value": 0.98, "range": [0.098, 9.8],
+    "source_url": "https://www.ulalaunch.com/docs/default-source/extended-duration/settled-cryogenic-propellant-transfer-2006-4436.pdf",
+    "note": "Kutter & Zegler, AIAA 2006-4436: the reference settled-transfer case uses 1e-4 g (0.98 mm/s^2), about 100 lb/h of settling propellant for a 100 t stack. Centaur flight heritage: 2e-4 g (1.96 mm/s^2) for short coasts, 8e-5 g for 20 min to 2 h coasts, control shown down to 1e-5 g (0.098 mm/s^2). Saturn: 2e-5 g. The range is 1e-5 g to 1e-3 g (the old Centaur standard). SpaceX has not published its value; IFT-3 used an 'active settling maneuver' (NASA CFMP)."
+  }
+}
